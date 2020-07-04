@@ -35,7 +35,7 @@ Found in namespace beleg::extensions::strings
 * toUpper
 	* For an example see toLower
 
-### STL Extensions
+### STL Container Extensions
 Found in namespace beleg::extensions::containers
 * contains
 	* Example
