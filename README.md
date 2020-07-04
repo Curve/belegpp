@@ -22,7 +22,7 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 ## Extensions
 
 ### String Extensions
-Found in namespace beleg::extensions::strings
+Found in `namespace beleg::extensions::strings`
 * toLower
 	* Example:
 		```cpp
@@ -36,7 +36,7 @@ Found in namespace beleg::extensions::strings
 	* For an example see toLower
 
 ### STL Container Extensions
-Found in namespace beleg::extensions::containers
+Found in `namespace beleg::extensions::containers`
 * contains
 	* Example
 		```cpp
