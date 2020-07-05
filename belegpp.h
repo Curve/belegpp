@@ -230,7 +230,7 @@ namespace beleg
 				return helpers::strings::mul(str, amount);
 			}
 			struct mul { unsigned int n; mul(unsigned int n) : n(n) {} };
-			std::string operator|(const char* str, mul mul)
+			inline std::string operator|(const char* str, mul mul)
 			{
 				return helpers::strings::mul(str, mul.n);
 			}
