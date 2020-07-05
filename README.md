@@ -1,6 +1,7 @@
 
 
 
+
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -182,3 +183,8 @@ Found in `namespace beleg::extensions::containers`
 		auto sliced = test | slice(1, -1)
 		//-> sliced {2, 3, 4, 5}
 		```
+
+### Note
+In all the examples only std::vector and std::map are used but the library is not limited to those.
+As long as the container has the functions `begin`, `end` as well as an `const_iterator` the extensions ***should*** mostly work, but some extensions like the slice function requires the container to have an `assign` function.
+Basically every extension except <u>slice</u> should work on every iterable object.
