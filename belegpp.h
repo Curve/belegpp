@@ -52,6 +52,12 @@ namespace beleg
 				std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 				return str;
 			}
+			inline std::string mul(std::string str, unsigned int n)
+			{
+				std::string rtn;
+				for (int i = 0; n > i; i++) rtn += str;
+				return rtn;
+			}
 		}
 		namespace containers
 		{
@@ -158,8 +164,7 @@ namespace beleg
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
-				sfinae::has_const_iterator<T>::value &&
-				sfinae::is_map_like<T>::value
+				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
 				std::optional<typename T::const_iterator> find(T& container, std::function<bool(typename T::const_iterator::value_type&)> func)
 			{
@@ -171,37 +176,30 @@ namespace beleg
 					return item;
 				return std::nullopt;
 			}
+
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
-				sfinae::has_const_iterator<T>::value &&
-				sfinae::is_map_like<T>::value
+				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> findItem(T& container, std::function<bool(typename T::const_iterator::value_type::second_type&)> func)
+				T& removeIf(T& container, std::function<bool(typename T::const_iterator::value_type&)> func)
 			{
-				auto item = std::find_if(container.begin(), container.end(), [&](auto it)
+				container.erase(std::remove_if(container.begin(), container.end(), [&](auto it)
 				{
-					return func(it.second);
-				});
-				if (item != container.end())
-					return item;
-				return std::nullopt;
+					return func(it);
+				}), container.end());
+				return container;
 			}
+
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
-				sfinae::has_const_iterator<T>::value &&
-				sfinae::is_map_like<T>::value
+				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> findKey(T& container, std::function<bool(typename T::const_iterator::value_type::first_type&)> func)
+				T reverse(T container)
 			{
-				auto item = std::find_if(container.begin(), container.end(), [&](auto it)
-				{
-					return func(it.first);
-				});
-				if (item != container.end())
-					return item;
-				return std::nullopt;
+				std::reverse(container.begin(), container.end());
+				return container;
 			}
 		}
 	}
@@ -226,6 +224,15 @@ namespace beleg
 			inline std::string operator|(const char* str, toUpper)
 			{
 				return helpers::strings::toUpper(str);
+			}
+			inline std::string operator*(std::string str, unsigned int amount)
+			{
+				return helpers::strings::mul(str, amount);
+			}
+			struct mul { unsigned int n; mul(unsigned int n) : n(n) {} };
+			std::string operator|(const char* str, mul mul)
+			{
+				return helpers::strings::mul(str, mul.n);
 			}
 		}
 		namespace containers
@@ -318,28 +325,26 @@ namespace beleg
 				return helpers::containers::find(container, what.func);
 			}
 
-			template <typename T> struct findItem { T func; findItem(T func) : func(func) {} };
-			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+			template <typename T> struct removeIf { T func; removeIf(T func) : func(func) {} };
+			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
-				sfinae::has_const_iterator<T>::value &&
-				sfinae::is_map_like<T>::value
+				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> operator|(T& container, findItem<W> what)
+				T& operator|(T& container, removeIf<F> what)
 			{
-				return helpers::containers::findItem(container, what.func);
+				return helpers::containers::removeIf(container, what.func);
 			}
 
-			template <typename T> struct findKey { T func; findKey(T func) : func(func) {} };
-			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+			struct reverse {};
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
-				sfinae::has_const_iterator<T>::value &&
-				sfinae::is_map_like<T>::value
+				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> operator|(T& container, findKey<W> what)
+				T operator|(T container, reverse)
 			{
-				return helpers::containers::findKey(container, what.func);
+				return helpers::containers::reverse(container);
 			}
 		}
 	}

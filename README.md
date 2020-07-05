@@ -1,4 +1,5 @@
 
+
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Cardsity/game-server/commits)
@@ -11,18 +12,18 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 - [ ] splice
 - [ ] slice
 - [ ] split
-- [ ] reverse
+- [x] ~~reverse~~
 - [ ] some
 - [ ] every
 - [ ] sort (maybe)
 - [ ] remove
-- [ ] removeIf
-- [ ] mutiply operator for strings ("n" * 5 -> "nnnnn")
+- [x] ~~removeIf~~
+- [x] ~~mutiply operator for strings ("n" * 5 -> "nnnnn")~~
 
 ## Extensions
 
 ### String Extensions
-Found in namespace beleg::extensions::strings
+Found in `namespace beleg::extensions::strings`
 * toLower
 	* Example:
 		```cpp
@@ -34,9 +35,18 @@ Found in namespace beleg::extensions::strings
 		```
 * toUpper
 	* For an example see toLower
+* operator*
+	* Repeats string n times
+	* Example
+		```cpp
+		 std::string test("a");
+		 std::cout << test * 3 << std::endl; //-> Prints "aaa"
+		//Doesnt work on cstrs that good tough
+		 std::string test2("a" | mul(3)); //-> test2 = "aaa"
+		```
 
 ### STL Container Extensions
-Found in namespace beleg::extensions::containers
+Found in `namespace beleg::extensions::containers`
 * contains
 	* Example
 		```cpp
@@ -84,7 +94,19 @@ Found in namespace beleg::extensions::containers
 		}
 		//-> Prints 2
 		```
-* findKey
-	* see example for find, this is used on maps, also returns an iterator to the whole entry.
-* findItem
-	*	see findKey, same but for the value instead of the key.
+* reverse
+	* just like std::reverse but as an extension
+	* Example
+		```cpp
+		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
+		list | reverse() | forEach([](auto item) { std::cout << item << std::endl; });
+		//-> Prints 6, 5, 4, 3, 2, 1
+		```
+* removeIf
+	* just like std::remove_if but as an extension
+	* Example
+		```cpp
+		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
+		list | removeIf([](auto& item) { return item % 2 == 0; });
+		//-> List is now: 1, 3, 5
+		```
