@@ -1,22 +1,23 @@
 
 
+
 # Belegpp
 
-[![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Cardsity/game-server/commits)
-[![License](https://img.shields.io/github/license/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Cardsity/game-server/blob/master/LICENSE)
+[![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
+[![License](https://img.shields.io/github/license/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/blob/master/LICENSE)
 
 ## What is this?
 Belegpp is a header only c++17 library that aims to simplify working with stl containers (and strings).
 This library aims to bring JS-Like functions for arrays and strings (or even other things) to c++ in form of "extensions".
 ## TODO
-- [ ] splice
-- [ ] slice
-- [ ] split
+- [x] ~~slice~~
+- [x] ~~split~~
+- [x] ~~replace~~
 - [x] ~~reverse~~
-- [ ] some
-- [ ] every
-- [ ] sort (maybe)
-- [ ] remove
+- [x] ~~some~~
+- [x] ~~every~~
+- [x] ~~sort (maybe)~~
+- [x] ~~remove~~
 - [x] ~~removeIf~~
 - [x] ~~mutiply operator for strings ("n" * 5 -> "nnnnn")~~
 
@@ -25,6 +26,7 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 ### String Extensions
 Found in `namespace beleg::extensions::strings`
 * toLower
+	* Returns a copy
 	* Example:
 		```cpp
 		std::string test("THIS IS UPPER CASE");
@@ -34,6 +36,7 @@ Found in `namespace beleg::extensions::strings`
 		std::string lowerCase = test | toLower(); //-> "this is upper case" works on cstrs too!
 		```
 * toUpper
+	* Returns a copy
 	* For an example see toLower
 * operator*
 	* Repeats string n times
@@ -41,8 +44,22 @@ Found in `namespace beleg::extensions::strings`
 		```cpp
 		 std::string test("a");
 		 std::cout << test * 3 << std::endl; //-> Prints "aaa"
-		//Doesnt work on cstrs that good though
+		//Doesn't work on cstrs that good though
 		 std::string test2("a" | mul(3)); //-> test2 = "aaa"
+		```
+* replace
+	* Returns a copy
+	* Example
+		 ```cpp
+		 std::string test("Replace this with something");
+		 auto replaced = test | replace("this", "something"); //-> "Replace something with something"
+		 ```
+* split
+	* Example
+		```cpp
+		std::string test("Give,me,this,as,an,array");
+		auto list = test | split(",");
+		//->list {"Give","me","this","as","an","array"}
 		```
 
 ### STL Container Extensions
@@ -64,12 +81,14 @@ Found in `namespace beleg::extensions::containers`
 		test | containsItem(5) //-> true;
 		```
 * map
+	* Returns a copy
 	* Example
 		```cpp
 		std::vector<std::string> list = {"One", "Two"};
 		list | map([](auto& item) { return "Number " + item; }) //-> {"Number One", "Number Two"}
 		```
 * filter
+	* Returns a copy
 	* Example
 		```cpp
 		std::vector<int> list = {1, 2, 3, 4, 5, 6};
@@ -94,7 +113,21 @@ Found in `namespace beleg::extensions::containers`
 		}
 		//-> Prints 2
 		```
+* findIf
+	* Returns an optional iterator
+	* Basically just std::find_if as an extension
+	* Example
+		```cpp
+		std::vector<int> list = { 1, 2, 3 };
+		auto two = list | findIf([](auto& item) { return item == 2; });
+		if (two)
+		{
+			std::cout << **two << std::endl;
+		}
+		//-> Prints 2
+		```
 * reverse
+	* Returns a copy
 	* just like std::reverse but as an extension
 	* Example
 		```cpp
@@ -102,11 +135,50 @@ Found in `namespace beleg::extensions::containers`
 		list | reverse() | forEach([](auto item) { std::cout << item << std::endl; });
 		//-> Prints 6, 5, 4, 3, 2, 1
 		```
+* remove
+	* Works on the actual list
+	* just like std::remove but as an extension
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3 };
+		test | remove(2);
+		//-> test is now { 1, 3 };
+		```
 * removeIf
+	* Works on the actual list
 	* just like std::remove_if but as an extension
 	* Example
 		```cpp
 		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
 		list | removeIf([](auto& item) { return item % 2 == 0; });
 		//-> List is now: 1, 3, 5
+		```
+* sort
+	* Returns a copy
+	* Just like std::sort but as an extension
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3 };
+		auto sorted = test | sort([](auto& first, auto& second) { return first > second; });
+		//-> sorted { 3, 2, 1 };
+		```
+* some
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3, 4, 5 };
+		test | some([](auto item) {return item % 2 == 0; }) //-> true
+		```
+* every
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3, 4, 5 };
+		test | every([](auto item) {return item % 2 == 0; }) //-> false
+		```
+* slice
+	* Returns a copy
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
+		auto sliced = test | slice(1, -1)
+		//-> sliced {2, 3, 4, 5}
 		```

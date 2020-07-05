@@ -52,10 +52,37 @@ namespace beleg
 				std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 				return str;
 			}
-			inline std::string mul(std::string str, unsigned int n)
+			inline std::string mul(std::string str, unsigned int& n)
 			{
 				std::string rtn;
 				for (int i = 0; n > i; i++) rtn += str;
+				return rtn;
+			}
+			inline std::string replace(std::string str, std::string& from, std::string& to)
+			{
+				if (!from.empty())
+					for (size_t pos = 0; (pos = str.find(from, pos)) != std::string::npos; pos += to.size())
+						str.replace(pos, from.size(), to);
+				return str;
+			}
+			inline bool contains(std::string str, std::string what)
+			{
+				return str.find(what) != std::string::npos;
+			}
+			inline std::vector<std::string> split(std::string str, std::string& delim)
+			{
+				std::vector<std::string> rtn;
+				size_t found = str.find(delim);
+				size_t startIndex = 0;
+				while (found != std::string::npos)
+				{
+					std::string temp(str.begin() + startIndex, str.begin() + found);
+					rtn.push_back(temp);
+					startIndex = found + delim.size();
+					found = str.find(delim, startIndex);
+				}
+				if (startIndex != str.size())
+					rtn.push_back(std::string(str.begin() + startIndex, str.end()));
 				return rtn;
 			}
 		}
@@ -70,18 +97,13 @@ namespace beleg
 				!std::is_same<T, std::string>::value
 				>* = nullptr
 			>
-				bool contains(T& container, W what)
+				bool contains(T& container, W& what)
 			{
 				auto found = std::find_if(container.begin(), container.end(), [&](auto item)
 				{
 					return item == what;
 				});
 				return found != container.end();
-			}
-			template <typename T, typename W, std::enable_if_t < std::is_same<T, std::string>::value >* = nullptr>
-			bool contains(T str, W what)
-			{
-				return str.find(what) != std::string::npos;
 			}
 
 			template <typename T, typename W,
@@ -94,7 +116,7 @@ namespace beleg
 				!std::is_same<T, std::string>::value
 				>* = nullptr
 			>
-				bool containsItem(T& container, W what)
+				bool containsItem(T& container, W& what)
 			{
 				auto found = std::find_if(container.begin(), container.end(), [&](auto item)
 				{
@@ -111,7 +133,7 @@ namespace beleg
 				sfinae::is_equality_comparable<typename T::const_iterator::value_type::first_type, W>::value &&
 				!std::is_same<T, std::string>::value
 			>* = nullptr>
-				bool containsKey(T& container, W what)
+				bool containsKey(T& container, W& what)
 			{
 				return container.find(what) != container.end();
 			}
@@ -121,7 +143,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T map(T container, std::function<typename T::const_iterator::value_type(typename T::const_iterator::value_type&)> func)
+				T map(T& container, std::function<typename T::const_iterator::value_type(typename T::const_iterator::value_type&)> func)
 			{
 				std::for_each(container.begin(), container.end(), [&](auto& item)
 				{
@@ -135,7 +157,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T filter(T container, std::function<bool(typename T::const_iterator::value_type&)> func)
+				T filter(T& container, std::function<bool(typename T::const_iterator::value_type&)> func)
 			{
 				T newContainer;
 				std::for_each(container.begin(), container.end(), [&](auto& item)
@@ -153,7 +175,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				void forEach(T container, std::function<void(typename T::const_iterator::value_type&)> func)
+				void forEach(T& container, std::function<void(typename T::const_iterator::value_type&)> func)
 			{
 				std::for_each(container.begin(), container.end(), [&](auto& item)
 				{
@@ -166,11 +188,28 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> find(T& container, std::function<bool(typename T::const_iterator::value_type&)> func)
+				std::optional<typename T::const_iterator> findIf(T& container, std::function<bool(typename T::const_iterator::value_type&)> func)
 			{
 				auto item = std::find_if(container.begin(), container.end(), [&](auto it)
 				{
 					return func(it);
+				});
+				if (item != container.end())
+					return item;
+				return std::nullopt;
+			}
+			
+			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_equality_comparable<typename T::const_iterator::value_type, W>::value
+			>* = nullptr>
+				std::optional<typename T::const_iterator> find(T& container, W& what)
+			{
+				auto item = std::find_if(container.begin(), container.end(), [&](auto it)
+				{
+					return it == what;
 				});
 				if (item != container.end())
 					return item;
@@ -196,10 +235,96 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T reverse(T container)
+				T reverse(T& container)
 			{
 				std::reverse(container.begin(), container.end());
 				return container;
+			}
+
+			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_equality_comparable<typename T::const_iterator::value_type, W>::value
+			>* = nullptr>
+				T& remove(T& container, W& what)
+			{
+				container.erase(std::remove(container.begin(), container.end(), what), container.end());
+				return container;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T sort(T& container, std::function<bool(typename T::const_iterator::value_type& first, typename T::const_iterator::value_type& second)> func)
+			{
+				std::sort(container.begin(), container.end(), func);
+				return container;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				bool some(T& container, std::function<bool(typename T::const_iterator::value_type& first)> func)
+			{
+				bool some = false;
+				std::all_of(container.begin(), container.end(), [&](auto& item)
+				{
+					if (func(item))
+					{
+						some = true;
+						return false;
+					}
+					return true;
+				});
+				return some;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				bool every(T& container, std::function<bool(typename T::const_iterator::value_type& first)> func)
+			{
+				bool every = true;
+				std::all_of(container.begin(), container.end(), [&](auto& item)
+				{
+					if (!func(item))
+					{
+						every = false;
+						return false;
+					}
+					return true;
+				});
+				return every;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+			T slice(T& input, int start, int end)
+			{
+				if (end == 0) end = input.size();
+				if (end < 0)
+					end = input.size() + end;
+				if (end < 0) end = 0;
+				if (end > input.size()) end = input.size();
+
+				if (start < 0) start = input.size() + start;
+				if (start < 0) start = 0;
+
+				if (start > end || start == end)
+					return {};
+
+				T sliced(input.begin() + start, input.begin() + end);
+				return sliced;
 			}
 		}
 	}
@@ -234,6 +359,24 @@ namespace beleg
 			{
 				return helpers::strings::mul(str, mul.n);
 			}
+			struct replace { std::string from; std::string to; replace(std::string from, std::string to) : from(from), to(to) {} };
+			inline std::string operator|(std::string str, replace what)
+			{
+				return helpers::strings::replace(str, what.from, what.to);
+			}
+			inline std::string operator|(const char* str, replace what)
+			{
+				return helpers::strings::replace(str, what.from, what.to);
+			}
+			struct split { std::string delim; split(std::string delim) : delim(delim) {} };
+			inline std::vector<std::string> operator|(std::string str, split what)
+			{
+				return helpers::strings::split(str, what.delim);
+			}
+			inline std::vector<std::string> operator|(const char* str, split what)
+			{
+				return helpers::strings::split(str, what.delim);
+			}
 		}
 		namespace containers
 		{
@@ -241,7 +384,7 @@ namespace beleg
 			template <typename T, typename W, std::enable_if_t<std::is_same<T, std::string>::value && (std::is_same<W, std::string>::value || std::is_same<const char*, W>::value)>* = nullptr>
 			bool operator|(T str, contains<W> what)
 			{
-				return helpers::containers::contains(str, std::is_same<W, std::string>::value ? what.what : std::string(what.what));
+				return helpers::strings::contains(str, std::is_same<W, std::string>::value ? what.what : std::string(what.what));
 			}
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
@@ -314,15 +457,27 @@ namespace beleg
 				return helpers::containers::forEach(container, transfrm.func);
 			}
 
-			template <typename T> struct find { T func; find(T func) : func(func) {} };
+			template <typename T> struct find { T what; find(T what) : what(what) {} };
+			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_equality_comparable<typename T::const_iterator::value_type, W>::value
+			>* = nullptr>
+				std::optional<typename T::const_iterator> operator|(T& container, find<W> what)
+			{
+				return helpers::containers::find(container, what.what);
+			}
+
+			template <typename T> struct findIf { T func; findIf(T func) : func(func) {} };
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				std::optional<typename T::const_iterator> operator|(T& container, find<W> what)
+				std::optional<typename T::const_iterator> operator|(T& container, findIf<W> what)
 			{
-				return helpers::containers::find(container, what.func);
+				return helpers::containers::findIf(container, what.func);
 			}
 
 			template <typename T> struct removeIf { T func; removeIf(T func) : func(func) {} };
@@ -345,6 +500,62 @@ namespace beleg
 				T operator|(T container, reverse)
 			{
 				return helpers::containers::reverse(container);
+			}
+
+			template <typename T> struct remove { T what; remove(T what) : what(what) {} };
+			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_equality_comparable<typename T::const_iterator::value_type, W>::value
+			>* = nullptr>
+				T& operator|(T& container, remove<W> what)
+			{
+				return helpers::containers::remove(container, what.what);
+			}
+
+			template <typename T> struct sort { T func; sort(T func) : func(func) {} };
+			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T operator|(T container, sort<F> what)
+			{
+				return helpers::containers::sort(container, what.func);
+			}
+
+			template <typename T> struct some { T func; some(T func) : func(func) {} };
+			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				bool operator|(T& container, some<F> what)
+			{
+				return helpers::containers::some(container, what.func);
+			}
+
+			template <typename T> struct every { T func; every(T func) : func(func) {} };
+			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				bool operator|(T& container, every<F> what)
+			{
+				return helpers::containers::every(container, what.func);
+			}
+
+			struct slice { int start; int end; slice(int start, int end = 0) : start(start), end(end) {} };
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T operator|(T container, slice what)
+			{
+				return helpers::containers::slice(container, what.start, what.end);
 			}
 		}
 	}
