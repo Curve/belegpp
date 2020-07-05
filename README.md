@@ -41,7 +41,7 @@ Found in `namespace beleg::extensions::strings`
 		```cpp
 		 std::string test("a");
 		 std::cout << test * 3 << std::endl; //-> Prints "aaa"
-		//Doesnt work on cstrs that good tough
+		//Doesnt work on cstrs that good though
 		 std::string test2("a" | mul(3)); //-> test2 = "aaa"
 		```
 
