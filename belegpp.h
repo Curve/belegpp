@@ -323,7 +323,8 @@ namespace beleg
 				if (start > end || start == end)
 					return {};
 
-				T sliced(input.begin() + start, input.begin() + end);
+				T sliced;
+				sliced.assign(input.begin() + start, input.begin() + end);
 				return sliced;
 			}
 		}

@@ -1,7 +1,3 @@
-
-
-
-
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -21,6 +17,10 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 - [x] ~~remove~~
 - [x] ~~removeIf~~
 - [x] ~~mutiply operator for strings ("n" * 5 -> "nnnnn")~~
+- [x] ~~make [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) compatible~~
+
+## Compatibility
+If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
 
 ## Extensions
 
