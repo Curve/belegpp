@@ -85,6 +85,18 @@ namespace beleg
 					rtn.push_back(std::string(str.begin() + startIndex, str.end()));
 				return rtn;
 			}
+			inline bool startsWith(std::string str, std::string& what)
+			{
+				return str.rfind(what, 0) == 0;
+			}
+			inline bool endsWith(std::string str, std::string& what)
+			{
+				return str.size() >= what.size() && str.compare(str.size() - what.size(), what.size(), what) == 0;
+			}
+			inline bool equalsIgnoreCase(std::string str, std::string& what)
+			{
+				return toLower(str) == toLower(what);
+			}
 		}
 		namespace containers
 		{
@@ -377,6 +389,33 @@ namespace beleg
 			inline std::vector<std::string> operator|(const char* str, split what)
 			{
 				return helpers::strings::split(str, what.delim);
+			}
+			struct startsWith { std::string what; startsWith(std::string what) : what(what) {} };
+			inline bool operator|(std::string str, startsWith what)
+			{
+				return helpers::strings::startsWith(str, what.what);
+			}
+			inline bool operator|(const char* str, startsWith what)
+			{
+				return helpers::strings::startsWith(str, what.what);
+			}
+			struct endsWith { std::string what; endsWith(std::string what) : what(what) {} };
+			inline bool operator|(std::string str, endsWith what)
+			{
+				return helpers::strings::endsWith(str, what.what);
+			}
+			inline bool operator|(const char* str, endsWith what)
+			{
+				return helpers::strings::endsWith(str, what.what);
+			}
+			struct equalsIgnoreCase { std::string what; equalsIgnoreCase(std::string what) : what(what) {} };
+			inline bool operator|(std::string str, equalsIgnoreCase what)
+			{
+				return helpers::strings::equalsIgnoreCase(str, what.what);
+			}
+			inline bool operator|(const char* str, equalsIgnoreCase what)
+			{
+				return helpers::strings::equalsIgnoreCase(str, what.what);
 			}
 		}
 		namespace containers
