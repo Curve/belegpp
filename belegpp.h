@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <cctype>
 #include <vector>
 #include <optional>
 #include <algorithm>
@@ -85,6 +86,12 @@ namespace beleg
 				if (startIndex != str.size())
 					rtn.push_back(std::string(str.begin() + startIndex, str.end()));
 				return rtn;
+			}
+			inline std::string trim(std::string str)
+			{
+				str.erase(str.begin(), std::find_if_not(str.begin(), str.end(), [](char c) { return std::isspace(c); }));
+				str.erase(std::find_if_not(str.rbegin(), str.rend(), [](char c) { return std::isspace(c); }).base(), str.end());
+				return str;
 			}
 			inline bool startsWith(std::string str, std::string& what)
 			{
@@ -417,6 +424,15 @@ namespace beleg
 			inline bool operator|(const char* str, equalsIgnoreCase what)
 			{
 				return helpers::strings::equalsIgnoreCase(str, what.what);
+			}
+			struct trim {};
+			inline std::string operator|(std::string str, trim)
+			{
+				return helpers::strings::trim(str);
+			}
+			inline std::string operator|(const char* str, trim)
+			{
+				return helpers::strings::trim(str);
 			}
 		}
 		namespace containers

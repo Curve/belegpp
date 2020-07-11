@@ -1,4 +1,3 @@
-
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -83,6 +82,13 @@ Found in `namespace beleg::extensions::strings`
 		```cpp
 		std::string test("TEST");
 		test | equalsIgnoreCase("test") //-> true;
+		```
+* trim
+	* Returns a copy
+	* Example
+		```cpp
+		std::string test("  test       ");
+		auto trimmed = test | trim(); //-> "test"
 		```
 
 ### STL Container Extensions
