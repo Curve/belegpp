@@ -259,6 +259,19 @@ namespace beleg
 				sliced->assign(input->begin() + start, input->begin() + end);
 				return sliced;
 			}
+
+			inline std::random_device rd;
+			inline std::mt19937 mt(rd());
+			template <typename T, class random = std::mt19937, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value
+			>* = nullptr>
+				T shuffle(T& input, random rand = mt)
+			{
+				std::shuffle(input->begin(), input->end(), rand);
+				return input;
+			}
 		}
 	}
 	namespace extensions
@@ -289,7 +302,6 @@ namespace beleg
 				return helpers::containers::containsItem(container, what.what);
 			}
 
-
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -302,7 +314,6 @@ namespace beleg
 				return helpers::containers::containsKey(container, what.what);
 			}
 
-
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -312,7 +323,6 @@ namespace beleg
 			{
 				return helpers::containers::map(container, transfrm.func);
 			}
-
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
@@ -324,7 +334,6 @@ namespace beleg
 				return helpers::containers::filter(container, transfrm.func);
 			}
 
-
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -334,7 +343,6 @@ namespace beleg
 			{
 				return helpers::containers::forEach(container, transfrm.func);
 			}
-
 
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
@@ -347,7 +355,6 @@ namespace beleg
 				return helpers::containers::find(container, what.what);
 			}
 
-
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -355,9 +362,8 @@ namespace beleg
 			>* = nullptr>
 				std::optional<typename T::obj_t::const_iterator> operator|(T& container, findIf<W> what)
 			{
-				return helpers::containers::findIf(container, what->func);
+				return helpers::containers::findIf(container, what.func);
 			}
-
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
@@ -369,7 +375,6 @@ namespace beleg
 				return helpers::containers::removeIf(container, what.func);
 			}
 
-
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -379,7 +384,6 @@ namespace beleg
 			{
 				return helpers::containers::reverse(container);
 			}
-
 
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
@@ -392,7 +396,6 @@ namespace beleg
 				return helpers::containers::remove(container, what.what);
 			}
 
-
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -402,7 +405,6 @@ namespace beleg
 			{
 				return helpers::containers::sort(container, what.func);
 			}
-
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
@@ -414,7 +416,6 @@ namespace beleg
 				return helpers::containers::some(container, what.func);
 			}
 
-
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -425,7 +426,6 @@ namespace beleg
 				return helpers::containers::every(container, what.func);
 			}
 
-
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -434,6 +434,16 @@ namespace beleg
 				T operator|(T container, slice what)
 			{
 				return helpers::containers::slice(container, what.start, what.end);
+			}
+
+			template <typename T, class random = std::mt19937, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value
+			>* = nullptr>
+				T operator|(T container, shuffle<random> what)
+			{
+				return helpers::containers::shuffle(container);
 			}
 		}
 	}

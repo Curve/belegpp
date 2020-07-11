@@ -1,5 +1,6 @@
 #pragma once
 #include <string>
+#include <random>
 #include <cctype>
 #include <vector>
 #include <optional>
@@ -347,6 +348,19 @@ namespace beleg
 				sliced.assign(input.begin() + start, input.begin() + end);
 				return sliced;
 			}
+
+			inline std::random_device rd;
+			inline std::mt19937 mt(rd());
+			template <typename T, class random = std::mt19937, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T shuffle(T& input, random rand = mt)
+			{
+				std::shuffle(input.begin(), input.end(), rand);
+				return input;
+			}
 		}
 	}
 	namespace extensions
@@ -613,6 +627,17 @@ namespace beleg
 				T operator|(T container, slice what)
 			{
 				return helpers::containers::slice(container, what.start, what.end);
+			}
+
+			template <class random = std::mt19937> struct shuffle { random rand; shuffle(random rand = helpers::containers::mt) : rand(rand) {} };
+			template <typename T, class random = std::mt19937, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T operator|(T container, shuffle<random> what)
+			{
+				return helpers::containers::shuffle(container);
 			}
 		}
 	}

@@ -1,3 +1,4 @@
+
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -21,7 +22,7 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 - [x] ~~startsWith~~
 - [x] ~~endsWith~~
 - [x] ~~equalsIgnoreCase~~
-- [ ] shuffle
+- [x] ~~shuffle~~
 
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
@@ -211,6 +212,19 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
 		auto sliced = test | slice(1, -1)
 		//-> sliced {2, 3, 4, 5}
+		```
+* shuffle
+	* Returns a copy
+	* Uses std::mt19937 by default
+	* Example
+		```cpp
+		std::vector<int> test = { 1, 2, 3 };
+		auto shuffled = test | shuffle();
+		//-> shuffled is now in a random order, for example { 3, 2, 1}
+		
+		//Using another random
+		auto customRandom = std::default_random_engine(beleg::helpers::containers::rd());
+		auto cShuffled = test | shuffle(customRandom);
 		```
 
 ### Note
