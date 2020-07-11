@@ -21,6 +21,7 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 - [x] ~~startsWith~~
 - [x] ~~endsWith~~
 - [x] ~~equalsIgnoreCase~~
+- [ ] shuffle
 
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
