@@ -190,6 +190,17 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
+				T& removeAt(T& container, std::size_t index)
+			{
+				container->erase(container->begin() + index);
+				return container;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value
+			>* = nullptr>
 				T sort(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type& first, typename T::obj_t::const_iterator::value_type& second)> func)
 			{
 				std::sort(container->begin(), container->end(), func);
@@ -260,8 +271,6 @@ namespace beleg
 				return sliced;
 			}
 
-			inline std::random_device rd;
-			inline std::mt19937 mt(rd());
 			template <typename T, class random = std::mt19937, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -396,6 +405,16 @@ namespace beleg
 				return helpers::containers::remove(container, what.what);
 			}
 
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value
+			>* = nullptr>
+				T& operator|(T& container, removeAt what)
+			{
+				return helpers::containers::removeAt(container, what.what);
+			}
+
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -445,6 +464,8 @@ namespace beleg
 			{
 				return helpers::containers::shuffle(container);
 			}
+
+
 		}
 	}
 }

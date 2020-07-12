@@ -279,6 +279,17 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
+				T& removeAt(T& container, std::size_t index)
+			{
+				container.erase(container.begin() + index);
+				return container;
+			}
+
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
 				T sort(T& container, std::function<bool(typename T::const_iterator::value_type& first, typename T::const_iterator::value_type& second)> func)
 			{
 				std::sort(container.begin(), container.end(), func);
@@ -583,6 +594,17 @@ namespace beleg
 				T& operator|(T& container, remove<W> what)
 			{
 				return helpers::containers::remove(container, what.what);
+			}
+
+			struct removeAt { std::size_t what; removeAt(std::size_t what) : what(what) {} };
+			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value
+			>* = nullptr>
+				T& operator|(T& container, removeAt what)
+			{
+				return helpers::containers::removeAt(container, what.what);
 			}
 
 			template <typename T> struct sort { T func; sort(T func) : func(func) {} };

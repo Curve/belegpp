@@ -1,4 +1,5 @@
 
+
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -23,7 +24,7 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 - [x] ~~endsWith~~
 - [x] ~~equalsIgnoreCase~~
 - [x] ~~shuffle~~
-- [ ] removeAt
+- [x] ~~removeAt~~
 
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
@@ -184,6 +185,14 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
 		list | removeIf([](auto& item) { return item % 2 == 0; });
 		//-> List is now: 1, 3, 5
+		```
+* removeAt
+	* Works on the actual list
+	* Example
+		```cpp
+		std::vector<int> list = { 1, 2, 3 };
+		list | removeAt(1);
+		//-> List is now: 1, 3
 		```
 * sort
 	* Returns a copy
