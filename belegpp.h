@@ -459,6 +459,10 @@ namespace beleg
 			{
 				return helpers::strings::trim(str);
 			}
+			inline bool operator!(std::string& str)
+			{
+				return str.size() == 0;
+			}
 		}
 		namespace containers
 		{

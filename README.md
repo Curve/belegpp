@@ -1,5 +1,3 @@
-
-
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -54,6 +52,24 @@ Found in `namespace beleg::extensions::strings`
 		 std::cout << test * 3 << std::endl; //-> Prints "aaa"
 		//Doesn't work on cstrs that good though
 		 std::string test2("a" | mul(3)); //-> test2 = "aaa"
+		```
+* operator!
+	* Checks if a string is empty
+	* Since overloading the "bool operator" from outside of the string class is not possible just use a double not
+	* Example
+		```cpp
+		std::string test;
+		if (!test)
+		{
+			std::cout << "Empty!" << std::endl;
+		}
+		//-> Will print "Empty"
+		test = "test";
+		if (!!test)
+		{
+			std::cout << "Not empty!" << std::endl;
+		}
+		//-> Will print "Not empty!"
 		```
 * replace
 	* Returns a copy
