@@ -219,7 +219,7 @@ namespace beleg
 					return item;
 				return std::nullopt;
 			}
-			
+
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
@@ -281,7 +281,8 @@ namespace beleg
 			>* = nullptr>
 				T& removeAt(T& container, std::size_t index)
 			{
-				container.erase(container.begin() + index);
+				if (container.size() > index && index >= 0)
+					container.erase(container.begin() + index);
 				return container;
 			}
 
@@ -341,7 +342,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-			T slice(T& input, int start, int end)
+				T slice(T& input, int start, int end)
 			{
 				if (end == 0) end = input.size();
 				if (end < 0)

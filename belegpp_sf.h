@@ -192,7 +192,8 @@ namespace beleg
 			>* = nullptr>
 				T& removeAt(T& container, std::size_t index)
 			{
-				container->erase(container->begin() + index);
+				if (container->size() > index && index >= 0)
+					container->erase(container->begin() + index);
 				return container;
 			}
 

@@ -27,6 +27,15 @@ This library aims to bring JS-Like functions for arrays and strings (or even oth
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
 
+## Exceptions
+This library doesn't throw exceptions, I may add support for that later but for now I don't see any use case for exceptions in this library.
+ 
+Code like this:
+```cpp
+std::vector<int> test = { 1 };
+test | removeAt(5);
+```
+Will simply not do anything, it won't remove anything from the vector and will not throw an exception - same goes for every other extention provided by this library.
 ## Extensions
 
 ### String Extensions
@@ -200,7 +209,7 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
 		list | removeIf([](auto& item) { return item % 2 == 0; });
-		//-> List is now: 1, 3, 5
+		//-> List is now: { 1, 3, 5 }
 		```
 * removeAt
 	* Works on the actual list
@@ -208,7 +217,7 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> list = { 1, 2, 3 };
 		list | removeAt(1);
-		//-> List is now: 1, 3
+		//-> List is now: { 1, 3 }
 		```
 * sort
 	* Returns a copy
@@ -237,7 +246,7 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
 		auto sliced = test | slice(1, -1)
-		//-> sliced {2, 3, 4, 5}
+		//-> sliced { 2, 3, 4, 5 }
 		```
 * shuffle
 	* Returns a copy
@@ -246,7 +255,7 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> test = { 1, 2, 3 };
 		auto shuffled = test | shuffle();
-		//-> shuffled is now in a random order, for example { 3, 2, 1}
+		//-> shuffled is now in a random order, for example { 3, 2, 1 }
 		
 		//Using another random
 		auto customRandom = std::default_random_engine(beleg::helpers::containers::rd());
