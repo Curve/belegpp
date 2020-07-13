@@ -64,7 +64,7 @@ Found in `namespace beleg::extensions::strings`
 		```
 * operator!
 	* Checks if a string is empty
-	* Since overloading the "bool operator" from outside of the string class is not possible just use a double not
+	* Since overloading the "bool operator" from outside of the string class is not possible just use a double not to check if the string is **not** empty
 	* Example
 		```cpp
 		std::string test;
