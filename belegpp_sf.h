@@ -282,6 +282,64 @@ namespace beleg
 				std::shuffle(input->begin(), input->end(), rand);
 				return input;
 			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
+				sfinae::is_map_like<typename T::obj_t>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::ostream& mapLikeToStream(std::ostream& stream, const T& what)
+			{
+				for (auto it = what->begin(); it != what->end(); ++it)
+				{
+					if (it == what->begin())
+					{
+						stream << "{ ";
+					}
+
+					if (std::distance(it, what->end()) == 1)
+					{
+						stream << "[" << it->first << ", " << it->second << "]" << " }";
+					}
+					else
+					{
+						stream << "[" << it->first << ", " << it->second << "]" << ", ";
+					}
+				}
+				return stream;
+			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
+			>* = nullptr>
+				std::ostream& containerToStream(std::ostream& stream, const T& what)
+			{
+				for (auto it = what->begin(); it != what->end(); ++it)
+				{
+					if (it == what->begin())
+					{
+						stream << "{ ";
+					}
+
+					if (std::distance(it, what->end()) == 1)
+					{
+						stream << *it << " }";
+					}
+					else
+					{
+						stream << *it << ", ";
+					}
+				}
+				return stream;
+			}
 		}
 	}
 	namespace extensions
@@ -466,7 +524,31 @@ namespace beleg
 				return helpers::containers::shuffle(container);
 			}
 
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
+			>* = nullptr>
+				std::ostream& operator<<(std::ostream& stream, const T& what)
+			{
+				return helpers::containers::containerToStream(stream, what);
+			}
 
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
+				sfinae::is_map_like<typename T::obj_t>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::ostream& operator<<(std::ostream& stream, const T& what)
+			{
+				return helpers::containers::mapLikeToStream(stream, what);
+			}
 		}
 	}
 }

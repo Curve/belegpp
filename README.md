@@ -261,8 +261,21 @@ Found in `namespace beleg::extensions::containers`
 		auto customRandom = std::default_random_engine(beleg::helpers::containers::rd());
 		auto cShuffled = test | shuffle(customRandom);
 		```
-
+* operator<<
+	* Makes your container streamable
+	* Example
+		```cpp
+		std::vector<std::string> test;
+		test.push_back("Test");
+		test.push_back("Test2");
+		std::cout << test << std::endl; //-> { Test, Test2 }
+	
+		std::map<std::string, int> test2;
+		test2.insert({ "Test", 1 });
+		test2.insert({ "Test2", 2 }); 
+		std::cout << test2 << std::endl; //-> { [Test, 1], [Test2, 2] }
+		```
 ### Note
 In all the examples only std::vector and std::map are used but the library is not limited to those.
 As long as the container has the functions `begin`, `end` as well as an `const_iterator` the extensions ***should*** mostly work, but some extensions like the slice function requires the container to have an `assign` function.
-Basically every extension except <u>slice</u> should work on every iterable object.
+Basically every extension except <u>slice</u> should work on every iterable object. 

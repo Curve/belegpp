@@ -3,6 +3,7 @@
 #include <random>
 #include <cctype>
 #include <vector>
+#include <sstream>
 #include <optional>
 #include <algorithm>
 #include <functional>
@@ -19,6 +20,20 @@ namespace beleg
 			template <typename C> static std::false_type & test(...);
 		public:
 			static const bool value = sizeof(test<T>(nullptr)) == sizeof(std::true_type);
+		};
+
+		template<typename T>
+		struct is_streamable
+		{
+			template<typename SS, typename TT>
+			static auto test(int)
+				-> decltype(std::declval<SS&>() << std::declval<TT>(), std::true_type());
+
+			template<typename, typename>
+			static auto test(...)->std::false_type;
+
+		public:
+			static const bool value = decltype(test<std::ostream, T>(0))::value;
 		};
 
 		template <typename T>
@@ -373,6 +388,64 @@ namespace beleg
 				std::shuffle(input.begin(), input.end(), rand);
 				return input;
 			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type>::value
+			>* = nullptr>
+				std::ostream& containerToStream(std::ostream& stream, const T& what)
+			{
+				for (auto it = what.begin(); it != what.end(); ++it)
+				{
+					if (it == what.begin())
+					{
+						stream << "{ ";
+					}
+
+					if (std::distance(it, what.end()) == 1)
+					{
+						stream << *it << " }";
+					}
+					else
+					{
+						stream << *it << ", ";
+					}
+				}
+				return stream;
+			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_map_like<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::ostream& mapLikeToStream(std::ostream& stream, const T& what)
+			{
+				for (auto it = what.begin(); it != what.end(); ++it)
+				{
+					if (it == what.begin())
+					{
+						stream << "{ ";
+					}
+
+					if (std::distance(it, what.end()) == 1)
+					{
+						stream << "[" << it->first << ", " << it->second << "]" << " }";
+					}
+					else
+					{
+						stream << "[" << it->first << ", " << it->second << "]" << ", ";
+					}
+				}
+				return stream;
+			}
 		}
 	}
 	namespace extensions
@@ -490,6 +563,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_map_like<T>::value &&
 				sfinae::is_equality_comparable<typename T::const_iterator::value_type::second_type, W>::value &&
 				!std::is_same<T, std::string>::value
 			>* = nullptr>
@@ -503,6 +577,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_map_like<T>::value &&
 				sfinae::is_equality_comparable<typename T::const_iterator::value_type::first_type, W>::value &&
 				!std::is_same<T, std::string>::value
 			>* = nullptr>
@@ -665,6 +740,32 @@ namespace beleg
 				T operator|(T container, shuffle<random> what)
 			{
 				return helpers::containers::shuffle(container);
+			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type>::value
+			>* = nullptr>
+				std::ostream& operator<<(std::ostream& stream, const T& what)
+			{
+				return helpers::containers::containerToStream(stream, what);
+			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::is_map_like<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::ostream& operator<<(std::ostream& stream, const T& what)
+			{
+				return helpers::containers::mapLikeToStream(stream, what);
 			}
 		}
 	}
