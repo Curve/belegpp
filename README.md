@@ -263,6 +263,7 @@ Found in `namespace beleg::extensions::containers`
 		```
 * operator<<
 	* Makes your container streamable
+	* Will only work on containers that are initially not streamable
 	* Example
 		```cpp
 		std::vector<std::string> test;
