@@ -25,7 +25,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 				>* = nullptr
 			>
@@ -44,7 +44,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type::second_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::second_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 				>* = nullptr
 			>
@@ -62,7 +62,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type::first_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::first_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
 				bool containsKey(T& container, W& what)
@@ -75,7 +75,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T map(T container, std::function<typename T::obj_T::obj_t::const_iterator::value_type(typename T::obj_T::obj_t::const_iterator::value_type&)> func)
+				T map(T container, std::function<typename T::obj_t::const_iterator::value_type(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				std::for_each(container->begin(), container->end(), [&](auto& item)
 				{
@@ -89,7 +89,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T filter(T& container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type&)> func)
+				T filter(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				T newContainer;
 				std::for_each(container->begin(), container->end(), [&](auto& item)
@@ -107,7 +107,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				void forEach(T& container, std::function<void(typename T::obj_T::obj_t::const_iterator::value_type&)> func)
+				void forEach(T& container, std::function<void(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				std::for_each(container->begin(), container->end(), [&](auto& item)
 				{
@@ -120,7 +120,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				std::optional<typename T::obj_T::obj_t::const_iterator> findIf(T& container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type&)> func)
+				std::optional<typename T::obj_t::const_iterator> findIf(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				auto item = std::find_if(container->begin(), container->end(), [&](auto it)
 				{
@@ -135,9 +135,9 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value
 			>* = nullptr>
-				std::optional<typename T::obj_T::obj_t::const_iterator> find(T& container, W& what)
+				std::optional<typename T::obj_t::const_iterator> find(T& container, W& what)
 			{
 				auto item = std::find_if(container->begin(), container->end(), [&](auto it)
 				{
@@ -153,7 +153,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T& removeIf(T& container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type&)> func)
+				T& removeIf(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				container->erase(std::remove_if(container->begin(), container->end(), [&](auto it)
 				{
@@ -177,7 +177,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value
 			>* = nullptr>
 				T& remove(T& container, W& what)
 			{
@@ -202,7 +202,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T sort(T container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type& first, typename T::obj_T::obj_t::const_iterator::value_type& second)> func)
+				T sort(T container, std::function<bool(typename T::obj_t::const_iterator::value_type& first, typename T::obj_t::const_iterator::value_type& second)> func)
 			{
 				std::sort(container->begin(), container->end(), func);
 				return container;
@@ -213,7 +213,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				bool some(T& container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type& first)> func)
+				bool some(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type& first)> func)
 			{
 				bool some = false;
 				std::all_of(container->begin(), container->end(), [&](auto& item)
@@ -233,7 +233,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				bool every(T& container, std::function<bool(typename T::obj_T::obj_t::const_iterator::value_type& first)> func)
+				bool every(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type& first)> func)
 			{
 				bool every = true;
 				std::all_of(container->begin(), container->end(), [&](auto& item)
@@ -288,7 +288,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				!sfinae::is_streamable<typename T::obj_t>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type>::value
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
 			>* = nullptr>
 				std::ostream& containerToStream(std::ostream& stream, const T& what)
 			{
@@ -317,8 +317,8 @@ namespace beleg
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				!sfinae::is_streamable<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type::first_type>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type::second_type>::value
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::second_type>::value
 			>* = nullptr>
 				std::ostream& mapLikeToStream(std::ostream& stream, const T& what)
 			{
@@ -350,7 +350,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
 				bool operator|(T& container, contains<W> what)
@@ -363,7 +363,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type::second_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::second_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
 				bool operator|(T& container, containsItem<W> what)
@@ -376,7 +376,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type::first_type, W>::value &&
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::first_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
 				bool operator|(T& container, containsKey<W> what)
@@ -418,9 +418,9 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value
 			>* = nullptr>
-				std::optional<typename T::obj_T::obj_t::const_iterator> operator|(T& container, find<W> what)
+				std::optional<typename T::obj_t::const_iterator> operator|(T& container, find<W> what)
 			{
 				return helpers::containers::find(container, what.what);
 			}
@@ -430,7 +430,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				std::optional<typename T::obj_T::obj_t::const_iterator> operator|(T& container, findIf<W> what)
+				std::optional<typename T::obj_t::const_iterator> operator|(T& container, findIf<W> what)
 			{
 				return helpers::containers::findIf(container, what.func);
 			}
@@ -459,7 +459,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				sfinae::is_equality_comparable<typename T::obj_T::obj_t::const_iterator::value_type, W>::value
+				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type, W>::value
 			>* = nullptr>
 				T& operator|(T& container, remove<W> what)
 			{
@@ -531,7 +531,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				!sfinae::is_streamable<typename T::obj_t>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type>::value
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
 			>* = nullptr>
 				std::ostream& operator<<(std::ostream& stream, const T& what)
 			{
@@ -544,8 +544,8 @@ namespace beleg
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
 				!sfinae::is_streamable<typename T::obj_t>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type::first_type>::value &&
-				sfinae::is_streamable<typename T::obj_T::obj_t::const_iterator::value_type::second_type>::value
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::second_type>::value
 			>* = nullptr>
 				std::ostream& operator<<(std::ostream& stream, const T& what)
 			{
