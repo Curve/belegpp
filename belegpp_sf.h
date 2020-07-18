@@ -192,7 +192,7 @@ namespace beleg
 			>* = nullptr>
 				T& removeAt(T& container, std::size_t index)
 			{
-				if (container->size() > index && index >= 0)
+				if (container->size() > index)
 					container->erase(container->begin() + index);
 				return container;
 			}
@@ -235,17 +235,10 @@ namespace beleg
 			>* = nullptr>
 				bool every(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type& first)> func)
 			{
-				bool every = true;
-				std::all_of(container->begin(), container->end(), [&](auto& item)
+				return std::all_of(container->begin(), container->end(), [&](auto& item)
 				{
-					if (!func(item))
-					{
-						every = false;
-						return false;
-					}
-					return true;
+					return func(item);
 				});
-				return every;
 			}
 
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,

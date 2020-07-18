@@ -312,7 +312,7 @@ namespace beleg
 			>* = nullptr>
 				T& removeAt(T& container, std::size_t index)
 			{
-				if (container.size() > index && index >= 0)
+				if (container.size() > index)
 					container.erase(container.begin() + index);
 				return container;
 			}
@@ -355,17 +355,10 @@ namespace beleg
 			>* = nullptr>
 				bool every(T& container, std::function<bool(typename T::const_iterator::value_type& first)> func)
 			{
-				bool every = true;
-				std::all_of(container.begin(), container.end(), [&](auto& item)
+				return std::all_of(container.begin(), container.end(), [&](auto& item)
 				{
-					if (!func(item))
-					{
-						every = false;
-						return false;
-					}
-					return true;
+					return func(item);
 				});
-				return every;
 			}
 
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
@@ -486,14 +479,14 @@ namespace beleg
 			{
 				return helpers::strings::toUpper(str);
 			}
-			inline std::string operator*(lor<std::string> str, lor<std::size_t> amount)
+			inline std::string operator*(lor<std::string> str, std::size_t amount)
 			{
-				return helpers::strings::mul(*str, *amount);
+				return helpers::strings::mul(*str, amount);
 			}
-			struct mul { unsigned int n; mul(unsigned int n) : n(n) {} };
+			struct mul { std::size_t n; mul(std::size_t n) : n(n) {} };
 			inline std::string operator|(const char* str, mul mul)
 			{
-				return helpers::strings::mul(str, mul.n);
+				return helpers::strings::mul(std::string(str), mul.n);
 			}
 			struct replace { std::string from; std::string to; replace(std::string from, std::string to) : from(from), to(to) {} };
 			inline std::string operator|(lor<std::string> str, replace what)
@@ -502,7 +495,7 @@ namespace beleg
 			}
 			inline std::string operator|(const char* str, replace what)
 			{
-				return helpers::strings::replace(str, what.from, what.to);
+				return helpers::strings::replace(std::string(str), what.from, what.to);
 			}
 			struct split { std::string delim; split(std::string delim) : delim(delim) {} };
 			inline std::vector<std::string> operator|(lor<std::string> str, split what)
@@ -511,7 +504,7 @@ namespace beleg
 			}
 			inline std::vector<std::string> operator|(const char* str, split what)
 			{
-				return helpers::strings::split(str, what.delim);
+				return helpers::strings::split(std::string(str), what.delim);
 			}
 			struct startsWith { std::string what; startsWith(std::string what) : what(what) {} };
 			inline bool operator|(lor<std::string> str, startsWith what)
@@ -520,7 +513,7 @@ namespace beleg
 			}
 			inline bool operator|(const char* str, startsWith what)
 			{
-				return helpers::strings::startsWith(str, what.what);
+				return helpers::strings::startsWith(std::string(str), what.what);
 			}
 			struct endsWith { std::string what; endsWith(std::string what) : what(what) {} };
 			inline bool operator|(lor<std::string> str, endsWith what)
@@ -529,7 +522,7 @@ namespace beleg
 			}
 			inline bool operator|(const char* str, endsWith what)
 			{
-				return helpers::strings::endsWith(str, what.what);
+				return helpers::strings::endsWith(std::string(str), what.what);
 			}
 			struct equalsIgnoreCase { std::string what; equalsIgnoreCase(std::string what) : what(what) {} };
 			inline bool operator|(lor<std::string> str, equalsIgnoreCase what)
@@ -538,7 +531,7 @@ namespace beleg
 			}
 			inline bool operator|(const char* str, equalsIgnoreCase what)
 			{
-				return helpers::strings::equalsIgnoreCase(str, what.what);
+				return helpers::strings::equalsIgnoreCase(std::string(str), what.what);
 			}
 			struct trim {};
 			inline std::string operator|(lor<std::string> str, trim)
@@ -560,7 +553,12 @@ namespace beleg
 			template <typename W, std::enable_if_t<std::is_same<W, std::string>::value || std::is_same<const char*, W>::value>* = nullptr>
 			bool operator|(lor<std::string> str, contains<W> what)
 			{
-				return helpers::strings::contains(str, std::is_same<W, std::string>::value ? what.what : std::string(what.what));
+				return helpers::strings::contains(*str, std::is_same<W, std::string>::value ? what.what : std::string(what.what));
+			}
+			template <typename W, std::enable_if_t<std::is_same<W, std::string>::value || std::is_same<const char*, W>::value>* = nullptr>
+			bool operator|(const char* str, contains<W> what)
+			{
+				return helpers::strings::contains(std::string(str), std::is_same<W, std::string>::value ? what.what : std::string(what.what));
 			}
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
