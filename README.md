@@ -6,23 +6,6 @@
 ## What is this?
 Belegpp is a header only c++17 library that aims to simplify working with stl containers (and strings).
 This library aims to bring JS-Like functions for arrays and strings (or even other things) to c++ in form of "extensions".
-## TODO
-- [x] ~~slice~~
-- [x] ~~split~~
-- [x] ~~replace~~
-- [x] ~~reverse~~
-- [x] ~~some~~
-- [x] ~~every~~
-- [x] ~~sort (maybe)~~
-- [x] ~~remove~~
-- [x] ~~removeIf~~
-- [x] ~~mutiply operator for strings ("n" * 5 -> "nnnnn")~~
-- [x] ~~make [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) compatible~~
-- [x] ~~startsWith~~
-- [x] ~~endsWith~~
-- [x] ~~equalsIgnoreCase~~
-- [x] ~~shuffle~~
-- [x] ~~removeAt~~
 
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
@@ -35,7 +18,7 @@ Code like this:
 std::vector<int> test = { 1 };
 test | removeAt(5);
 ```
-Will simply not do anything, it won't remove anything from the vector and will not throw an exception - same goes for every other extention provided by this library.
+Will simply not do anything, it won't remove anything from the vector and will not throw an exception - same goes for every other extension provided by this library.
 ## Extensions
 
 ### String Extensions

@@ -52,7 +52,7 @@ namespace beleg
 			{
 				auto found = std::find_if(container->begin(), container->end(), [&](auto item)
 				{
-					return item->second == what;
+					return item.second == what;
 				});
 				return found != container->end();
 			}
@@ -75,7 +75,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T map(T& container, std::function<typename T::obj_t::const_iterator::value_type(typename T::obj_t::const_iterator::value_type&)> func)
+				T map(T container, std::function<typename T::obj_t::const_iterator::value_type(typename T::obj_t::const_iterator::value_type&)> func)
 			{
 				std::for_each(container->begin(), container->end(), [&](auto& item)
 				{
@@ -167,7 +167,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T reverse(T& container)
+				T reverse(T container)
 			{
 				std::reverse(container->begin(), container->end());
 				return container;
@@ -202,7 +202,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T sort(T& container, std::function<bool(typename T::obj_t::const_iterator::value_type& first, typename T::obj_t::const_iterator::value_type& second)> func)
+				T sort(T container, std::function<bool(typename T::obj_t::const_iterator::value_type& first, typename T::obj_t::const_iterator::value_type& second)> func)
 			{
 				std::sort(container->begin(), container->end(), func);
 				return container;
@@ -253,7 +253,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T slice(T& input, int start, int end)
+				T slice(T input, int start, int end)
 			{
 				if (end == 0) end = input->size();
 				if (end < 0)
@@ -277,10 +277,38 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T shuffle(T& input, random rand = mt)
+				T shuffle(T input, random rand = mt)
 			{
 				std::shuffle(input->begin(), input->end(), rand);
 				return input;
+			}
+
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
+				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
+			>* = nullptr>
+				std::ostream& containerToStream(std::ostream& stream, const T& what)
+			{
+				for (auto it = what->begin(); it != what->end(); ++it)
+				{
+					if (it == what->begin())
+					{
+						stream << "{ ";
+					}
+
+					if (std::distance(it, what->end()) == 1)
+					{
+						stream << *it << " }";
+					}
+					else
+					{
+						stream << *it << ", ";
+					}
+				}
+				return stream;
 			}
 
 			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -312,34 +340,6 @@ namespace beleg
 				}
 				return stream;
 			}
-
-			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
-				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
-				std::enable_if_t<sfinae::is_safe_object<T>::value &&
-				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				!sfinae::is_streamable<typename T::obj_t>::value &&
-				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type>::value
-			>* = nullptr>
-				std::ostream& containerToStream(std::ostream& stream, const T& what)
-			{
-				for (auto it = what->begin(); it != what->end(); ++it)
-				{
-					if (it == what->begin())
-					{
-						stream << "{ ";
-					}
-
-					if (std::distance(it, what->end()) == 1)
-					{
-						stream << *it << " }";
-					}
-					else
-					{
-						stream << *it << ", ";
-					}
-				}
-				return stream;
-			}
 		}
 	}
 	namespace extensions
@@ -362,6 +362,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				sfinae::is_map_like<typename T::obj_t>::value &&
 				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::second_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
@@ -374,6 +375,7 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				sfinae::is_map_like<typename T::obj_t>::value &&
 				sfinae::is_equality_comparable<typename T::obj_t::const_iterator::value_type::first_type, W>::value &&
 				!std::is_same<typename T::obj_t, std::string>::value
 			>* = nullptr>
@@ -387,7 +389,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, map<F> transfrm)
+				T operator|(T& container, map<F> transfrm)
 			{
 				return helpers::containers::map(container, transfrm.func);
 			}
@@ -397,7 +399,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, filter<F> transfrm)
+				T operator|(T& container, filter<F> transfrm)
 			{
 				return helpers::containers::filter(container, transfrm.func);
 			}
@@ -407,7 +409,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				void operator|(T container, forEach<F> transfrm)
+				void operator|(T& container, forEach<F> transfrm)
 			{
 				return helpers::containers::forEach(container, transfrm.func);
 			}
@@ -448,7 +450,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, reverse)
+				T operator|(T& container, reverse)
 			{
 				return helpers::containers::reverse(container);
 			}
@@ -479,7 +481,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, sort<F> what)
+				T operator|(T& container, sort<F> what)
 			{
 				return helpers::containers::sort(container, what.func);
 			}
@@ -509,7 +511,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, slice what)
+				T operator|(T& container, slice what)
 			{
 				return helpers::containers::slice(container, what.start, what.end);
 			}
@@ -519,7 +521,7 @@ namespace beleg
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value
 			>* = nullptr>
-				T operator|(T container, shuffle<random> what)
+				T operator|(T& container, shuffle<random> what)
 			{
 				return helpers::containers::shuffle(container);
 			}
@@ -540,8 +542,8 @@ namespace beleg
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
 				sfinae::has_const_iterator<typename T::obj_t>::value &&
-				!sfinae::is_streamable<typename T::obj_t>::value &&
 				sfinae::is_map_like<typename T::obj_t>::value &&
+				!sfinae::is_streamable<typename T::obj_t>::value &&
 				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::first_type>::value &&
 				sfinae::is_streamable<typename T::obj_t::const_iterator::value_type::second_type>::value
 			>* = nullptr>

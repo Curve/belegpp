@@ -56,6 +56,22 @@ namespace beleg
 			>::type
 		> : std::true_type {};
 	}
+	template <typename Ref>
+	struct lor {
+
+		Ref &&ref;
+
+		template <typename Arg>
+		constexpr lor(Arg &&arg) noexcept
+			: ref(std::move(arg))
+		{ }
+
+		constexpr operator Ref& () const & noexcept { return ref; }
+		constexpr operator Ref && () const && noexcept { return std::move(ref); }
+		constexpr Ref& operator*() const noexcept { return ref; }
+		constexpr Ref* operator->() const noexcept { return &ref; }
+
+	};
 	namespace helpers
 	{
 		namespace strings
@@ -70,37 +86,37 @@ namespace beleg
 				std::transform(str.begin(), str.end(), str.begin(), ::toupper);
 				return str;
 			}
-			inline std::string mul(std::string str, unsigned int& n)
+			inline std::string mul(lor<std::string> str, std::size_t n)
 			{
 				std::string rtn;
-				for (int i = 0; n > i; i++) rtn += str;
+				for (int i = 0; n > i; i++) rtn += (*str);
 				return rtn;
 			}
-			inline std::string replace(std::string str, std::string& from, std::string& to)
+			inline std::string replace(std::string str, lor<std::string> from, lor<std::string> to)
 			{
-				if (!from.empty())
-					for (size_t pos = 0; (pos = str.find(from, pos)) != std::string::npos; pos += to.size())
-						str.replace(pos, from.size(), to);
+				if (!from->empty())
+					for (size_t pos = 0; (pos = str.find(*from, pos)) != std::string::npos; pos += to->size())
+						str.replace(pos, from->size(), *to);
 				return str;
 			}
-			inline bool contains(std::string str, std::string what)
+			inline bool contains(lor<std::string> str, lor<std::string> what)
 			{
-				return str.find(what) != std::string::npos;
+				return str->find(*what) != std::string::npos;
 			}
-			inline std::vector<std::string> split(std::string str, std::string& delim)
+			inline std::vector<std::string> split(lor<std::string> str, lor<std::string> delim)
 			{
 				std::vector<std::string> rtn;
-				size_t found = str.find(delim);
+				size_t found = str->find(*delim);
 				size_t startIndex = 0;
 				while (found != std::string::npos)
 				{
-					std::string temp(str.begin() + startIndex, str.begin() + found);
+					std::string temp(str->begin() + startIndex, str->begin() + found);
 					rtn.push_back(temp);
-					startIndex = found + delim.size();
-					found = str.find(delim, startIndex);
+					startIndex = found + delim->size();
+					found = str->find(*delim, startIndex);
 				}
-				if (startIndex != str.size())
-					rtn.push_back(std::string(str.begin() + startIndex, str.end()));
+				if (startIndex != str->size())
+					rtn.push_back(std::string(str->begin() + startIndex, str->end()));
 				return rtn;
 			}
 			inline std::string trim(std::string str)
@@ -109,17 +125,17 @@ namespace beleg
 				str.erase(std::find_if_not(str.rbegin(), str.rend(), [](char c) { return std::isspace(c); }).base(), str.end());
 				return str;
 			}
-			inline bool startsWith(std::string str, std::string& what)
+			inline bool startsWith(lor<std::string> str, lor<std::string> what)
 			{
-				return str.rfind(what, 0) == 0;
+				return str->rfind(*what, 0) == 0;
 			}
-			inline bool endsWith(std::string str, std::string& what)
+			inline bool endsWith(lor<std::string> str, lor<std::string> what)
 			{
-				return str.size() >= what.size() && str.compare(str.size() - what.size(), what.size(), what) == 0;
+				return str->size() >= what->size() && str->compare(str->size() - what->size(), what->size(), *what) == 0;
 			}
-			inline bool equalsIgnoreCase(std::string str, std::string& what)
+			inline bool equalsIgnoreCase(lor<std::string> str, lor<std::string> what)
 			{
-				return toLower(str) == toLower(what);
+				return toLower(*str) == toLower(*what);
 			}
 		}
 		namespace containers
@@ -179,7 +195,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T map(T& container, std::function<typename T::const_iterator::value_type(typename T::const_iterator::value_type&)> func)
+				T map(T container, std::function<typename T::const_iterator::value_type(typename T::const_iterator::value_type&)> func)
 			{
 				std::for_each(container.begin(), container.end(), [&](auto& item)
 				{
@@ -271,7 +287,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T reverse(T& container)
+				T reverse(T container)
 			{
 				std::reverse(container.begin(), container.end());
 				return container;
@@ -306,7 +322,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T sort(T& container, std::function<bool(typename T::const_iterator::value_type& first, typename T::const_iterator::value_type& second)> func)
+				T sort(T container, std::function<bool(typename T::const_iterator::value_type& first, typename T::const_iterator::value_type& second)> func)
 			{
 				std::sort(container.begin(), container.end(), func);
 				return container;
@@ -357,7 +373,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T slice(T& input, int start, int end)
+				T slice(T input, int start, int end)
 			{
 				if (end == 0) end = input.size();
 				if (end < 0)
@@ -383,7 +399,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T shuffle(T& input, random rand = mt)
+				T shuffle(T input, random rand = mt)
 			{
 				std::shuffle(input.begin(), input.end(), rand);
 				return input;
@@ -453,26 +469,26 @@ namespace beleg
 		namespace strings
 		{
 			struct toLower {};
-			inline std::string operator|(std::string str, toLower)
+			inline std::string operator|(lor<std::string> str, toLower)
 			{
-				return helpers::strings::toLower(str);
+				return helpers::strings::toLower(*str);
 			}
 			inline std::string operator|(const char* str, toLower)
 			{
-				return helpers::strings::toLower(std::string(str));
+				return helpers::strings::toLower(str);
 			}
 			struct toUpper {};
-			inline std::string operator|(std::string str, toUpper)
+			inline std::string operator|(lor<std::string> str, toUpper)
 			{
-				return helpers::strings::toUpper(str);
+				return helpers::strings::toUpper(*str);
 			}
 			inline std::string operator|(const char* str, toUpper)
 			{
 				return helpers::strings::toUpper(str);
 			}
-			inline std::string operator*(std::string str, unsigned int amount)
+			inline std::string operator*(lor<std::string> str, lor<std::size_t> amount)
 			{
-				return helpers::strings::mul(str, amount);
+				return helpers::strings::mul(*str, *amount);
 			}
 			struct mul { unsigned int n; mul(unsigned int n) : n(n) {} };
 			inline std::string operator|(const char* str, mul mul)
@@ -480,60 +496,60 @@ namespace beleg
 				return helpers::strings::mul(str, mul.n);
 			}
 			struct replace { std::string from; std::string to; replace(std::string from, std::string to) : from(from), to(to) {} };
-			inline std::string operator|(std::string str, replace what)
+			inline std::string operator|(lor<std::string> str, replace what)
 			{
-				return helpers::strings::replace(str, what.from, what.to);
+				return helpers::strings::replace(*str, what.from, what.to);
 			}
 			inline std::string operator|(const char* str, replace what)
 			{
 				return helpers::strings::replace(str, what.from, what.to);
 			}
 			struct split { std::string delim; split(std::string delim) : delim(delim) {} };
-			inline std::vector<std::string> operator|(std::string str, split what)
+			inline std::vector<std::string> operator|(lor<std::string> str, split what)
 			{
-				return helpers::strings::split(str, what.delim);
+				return helpers::strings::split(*str, what.delim);
 			}
 			inline std::vector<std::string> operator|(const char* str, split what)
 			{
 				return helpers::strings::split(str, what.delim);
 			}
 			struct startsWith { std::string what; startsWith(std::string what) : what(what) {} };
-			inline bool operator|(std::string str, startsWith what)
+			inline bool operator|(lor<std::string> str, startsWith what)
 			{
-				return helpers::strings::startsWith(str, what.what);
+				return helpers::strings::startsWith(*str, what.what);
 			}
 			inline bool operator|(const char* str, startsWith what)
 			{
 				return helpers::strings::startsWith(str, what.what);
 			}
 			struct endsWith { std::string what; endsWith(std::string what) : what(what) {} };
-			inline bool operator|(std::string str, endsWith what)
+			inline bool operator|(lor<std::string> str, endsWith what)
 			{
-				return helpers::strings::endsWith(str, what.what);
+				return helpers::strings::endsWith(*str, what.what);
 			}
 			inline bool operator|(const char* str, endsWith what)
 			{
 				return helpers::strings::endsWith(str, what.what);
 			}
 			struct equalsIgnoreCase { std::string what; equalsIgnoreCase(std::string what) : what(what) {} };
-			inline bool operator|(std::string str, equalsIgnoreCase what)
+			inline bool operator|(lor<std::string> str, equalsIgnoreCase what)
 			{
-				return helpers::strings::equalsIgnoreCase(str, what.what);
+				return helpers::strings::equalsIgnoreCase(*str, what.what);
 			}
 			inline bool operator|(const char* str, equalsIgnoreCase what)
 			{
 				return helpers::strings::equalsIgnoreCase(str, what.what);
 			}
 			struct trim {};
-			inline std::string operator|(std::string str, trim)
+			inline std::string operator|(lor<std::string> str, trim)
 			{
-				return helpers::strings::trim(str);
+				return helpers::strings::trim(*str);
 			}
 			inline std::string operator|(const char* str, trim)
 			{
 				return helpers::strings::trim(str);
 			}
-			inline bool operator!(std::string& str)
+			inline bool operator!(const std::string& str)
 			{
 				return str.size() == 0;
 			}
@@ -541,8 +557,8 @@ namespace beleg
 		namespace containers
 		{
 			template <typename T> struct contains { T what; contains(T what) : what(what) {} };
-			template <typename T, typename W, std::enable_if_t<std::is_same<T, std::string>::value && (std::is_same<W, std::string>::value || std::is_same<const char*, W>::value)>* = nullptr>
-			bool operator|(T str, contains<W> what)
+			template <typename W, std::enable_if_t<std::is_same<W, std::string>::value || std::is_same<const char*, W>::value>* = nullptr>
+			bool operator|(lor<std::string> str, contains<W> what)
 			{
 				return helpers::strings::contains(str, std::is_same<W, std::string>::value ? what.what : std::string(what.what));
 			}
@@ -592,7 +608,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, map<F> transfrm)
+				T operator|(T& container, map<F> transfrm)
 			{
 				return helpers::containers::map(container, transfrm.func);
 			}
@@ -603,7 +619,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, filter<F> transfrm)
+				T operator|(T& container, filter<F> transfrm)
 			{
 				return helpers::containers::filter(container, transfrm.func);
 			}
@@ -614,7 +630,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				void operator|(T container, forEach<F> transfrm)
+				void operator|(T& container, forEach<F> transfrm)
 			{
 				return helpers::containers::forEach(container, transfrm.func);
 			}
@@ -659,7 +675,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, reverse)
+				T operator|(T& container, reverse)
 			{
 				return helpers::containers::reverse(container);
 			}
@@ -693,7 +709,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, sort<F> what)
+				T operator|(T& container, sort<F> what)
 			{
 				return helpers::containers::sort(container, what.func);
 			}
@@ -726,7 +742,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, slice what)
+				T operator|(T& container, slice what)
 			{
 				return helpers::containers::slice(container, what.start, what.end);
 			}
@@ -737,7 +753,7 @@ namespace beleg
 				std::enable_if_t<
 				sfinae::has_const_iterator<T>::value
 			>* = nullptr>
-				T operator|(T container, shuffle<random> what)
+				T operator|(T& container, shuffle<random> what)
 			{
 				return helpers::containers::shuffle(container);
 			}
