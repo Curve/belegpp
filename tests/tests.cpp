@@ -152,12 +152,16 @@ int main()
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
-		std::stringstream yeet;
-		yeet << test;
-		assert(yeet.str().size() > 0);
+		std::stringstream sstr;
+		sstr << test;
+		assert(sstr.str().size() > 0);
+	}
+	{
+		std::vector<int> test = { 1,2,3 };
+		auto res = test | mapTo<std::vector<std::string>>([](auto& item) { return std::to_string(item); });
+		assert(res.at(0) == "1");
 	}
 
 	std::cout << "Tests finished!" << std::endl;
-	std::cin.get();
 	return 0;
 }
