@@ -14,9 +14,9 @@ jobs:
       run: sudo apt-get update && sudo apt-get install -yq clang
     # mov headers
     - name: move headers
-      run: mv belegpp.h belegpp_fs.h tests
+      run: mv belegpp.h belegpp_sf.h tests
     # run tests
-    - name: build and run
+    - name: build
       run: cd tests && clang++ tests.cpp -std=c++17 -o a.out
-    - name: run test 2
+    - name: run test
       run: cd tests && ./a.out
