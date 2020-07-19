@@ -128,6 +128,13 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<std::string> list = {"One", "Two"};
 		list | map([](auto& item) { return "Number " + item; }) //-> {"Number One", "Number Two"}
 		```
+* mapTo
+	* Returns a copy
+	* Example
+		```cpp
+		std::vector<int> test = {1,2,3};
+		test | mapTo<std::vector<std::string>>([](auto& item) { return std::to_string(item); }) //-> {"1","2","3"}
+		```
 * filter
 	* Returns a copy
 	* Example

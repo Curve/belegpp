@@ -84,6 +84,24 @@ namespace beleg
 				return container;
 			}
 
+			template <typename R, typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*begin(std::declval<R>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<R>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				sfinae::has_const_iterator<R>::value
+			>* = nullptr>
+				R mapTo(T& container, std::function<typename R::const_iterator::value_type(typename T::obj_t::const_iterator::value_type&)> func)
+			{
+				R rtn;
+				std::for_each(container->begin(), container->end(), [&](auto& item)
+				{
+					rtn.insert(rtn.end(), func(item));
+				});
+				return rtn;
+			}
+
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
 				std::enable_if_t<sfinae::is_safe_object<T>::value &&
@@ -385,6 +403,19 @@ namespace beleg
 				T operator|(T& container, map<F> transfrm)
 			{
 				return helpers::containers::map(container, transfrm.func);
+			}
+
+			template <typename R, typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<typename T::obj_t>()))>,
+				typename = std::decay_t<decltype(*begin(std::declval<R>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<R>()))>,
+				std::enable_if_t<sfinae::is_safe_object<T>::value &&
+				sfinae::has_const_iterator<typename T::obj_t>::value &&
+				sfinae::has_const_iterator<R>::value
+			>* = nullptr>
+				R operator|(T& container, _mapTo<F, R> transfrm)
+			{
+				return helpers::containers::mapTo<R>(container, transfrm.func);
 			}
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,

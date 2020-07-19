@@ -204,6 +204,24 @@ namespace beleg
 				return container;
 			}
 
+			template <typename R, typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*begin(std::declval<R>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<R>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::has_const_iterator<R>::value
+			>* = nullptr>
+				R mapTo(T& container, std::function<typename R::const_iterator::value_type(typename T::const_iterator::value_type&)> func)
+			{
+				R rtn;
+				std::for_each(container.begin(), container.end(), [&](auto& item)
+				{
+					rtn.insert(rtn.end(), func(item));
+				});
+				return rtn;
+			}
+
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
@@ -609,6 +627,26 @@ namespace beleg
 				T operator|(T& container, map<F> transfrm)
 			{
 				return helpers::containers::map(container, transfrm.func);
+			}
+
+			template <typename T, typename R> struct _mapTo { T func; _mapTo(T func) : func(func) {} };
+			template<typename R, typename T>
+			_mapTo<T, R> mapTo(T func)
+			{
+				return _mapTo<T, R>(func);
+			}
+
+			template <typename R, typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*begin(std::declval<R>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<R>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				sfinae::has_const_iterator<R>::value
+			>* = nullptr>
+				R operator|(T& container, _mapTo<F, R> transfrm)
+			{
+				return helpers::containers::mapTo<R>(container, transfrm.func);
 			}
 
 			template <typename T> struct filter { T func; filter(T func) : func(func) {} };
