@@ -7,8 +7,34 @@
 Belegpp is a header only c++17 library that aims to simplify working with stl containers (and strings).
 This library aims to bring JS-Like functions for arrays and strings (or even other things) to c++ in form of "extensions".
 
+## Installing
+### Manual
+Drop the header file in to your project.
+### Conan
+Add the bintray remote:
+```
+conan remote add belegpp https://api.bintray.com/conan/curve/belegpp
+```
+and install belegpp:
+```
+conan install belegpp/0.1@curve/belegpp -r belegpp
+```
+
+Finally add belegpp to your conanfile.txt:
+```
+[requires]
+belegpp/0.1@curve/belegpp
+```
 ## Compatibility
 If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsafe) make sure to include `belegpp_sf.h` to enable container extensions on `safe_ptr`-container objects.
+
+## Portability
+Tested and compiled with:
+-   Microsoft Visual Studio 2017
+-   G++(GCC) 9.3.0 (*)
+-   Clang(++) 10.0.0
+
+(*) not tested
 
 ## Exceptions
 This library doesn't throw exceptions, I may add support for that later but for now I don't see any use case for exceptions in this library.
