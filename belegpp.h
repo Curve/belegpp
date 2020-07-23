@@ -5,6 +5,7 @@
 #include <vector>
 #include <sstream>
 #include <optional>
+#include <iostream>
 #include <algorithm>
 #include <functional>
 
@@ -22,20 +23,28 @@ namespace beleg
 			static const bool value = sizeof(test<T>(nullptr)) == sizeof(std::true_type);
 		};
 
+		namespace is_streamable_impl {
+			struct any_t {
+				template<typename T> any_t(T const&);
+			};
+
+			std::uint8_t operator<<(std::ostream const&, any_t const&);
+
+			std::uint16_t& test(std::ostream&);
+			std::uint8_t test(std::uint8_t);
+
+			template<typename T>
+			struct is_streamable {
+				static std::ostream &s;
+				static T const &t;
+				static bool const value = sizeof(test(s << t)) == sizeof(std::uint16_t);
+			};
+		}
 		template<typename T>
-		struct is_streamable
-		{
-			template<typename SS, typename TT>
-			static auto test(int)
-				-> decltype(std::declval<SS&>() << std::declval<TT>(), std::true_type());
-
-			template<typename, typename>
-			static auto test(...)->std::false_type;
-
-		public:
-			static const bool value = decltype(test<std::ostream, T>(0))::value;
+		struct is_streamable :
+			is_streamable_impl::is_streamable<T> {
 		};
-
+		
 		template <typename T>
 		struct is_map_like
 		{
