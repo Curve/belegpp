@@ -141,11 +141,11 @@ int main()
 		assert(sliced.at(3) == 5);
 	}
 	{
-		//Well, this may fail sometimes due to randomness but is very unlikely
+		//Well, this may fail sometimes but hey
 		std::vector<int> test = { 1, 2, 3 };
 		auto shuffled = test | shuffle();
 		bool success = false;
-		for (int i = 0; 10 > i; i++)
+		for (int i = 0; 100 > i; i++)
 		{
 			if (shuffled != test)
 				success = true;
