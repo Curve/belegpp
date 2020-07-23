@@ -83,6 +83,15 @@ namespace beleg
 	};
 	namespace helpers
 	{
+		namespace print
+		{
+			template <typename ...T>
+			void print(T... args)
+			{
+				((std::cout << args), ...);
+				std::cout << std::endl;
+			}
+		}
 		namespace strings
 		{
 			inline std::string toLower(std::string str)

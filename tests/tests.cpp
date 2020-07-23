@@ -1,9 +1,11 @@
 #include "belegpp.h"
 #include "belegpp_sf.h"
-#include <cassert>
-#include <map>
 #include <iostream>
+#include <cassert>
+#include <time.h>
+#include <map>
 
+using namespace beleg::helpers::print;
 using namespace beleg::extensions::strings;
 using namespace beleg::extensions::containers;
 
@@ -160,6 +162,9 @@ int main()
 		std::vector<int> test = { 1,2,3 };
 		auto res = test | mapTo<std::vector<std::string>>([](auto& item) { return std::to_string(item); });
 		assert(res.at(0) == "1");
+	}
+	{
+		print("belegpp - current time: ", time(0));
 	}
 
 	std::cout << "Tests finished!" << std::endl;

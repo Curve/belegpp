@@ -266,6 +266,15 @@ Found in `namespace beleg::extensions::containers`
 		test2.insert({ "Test2", 2 }); 
 		std::cout << test2 << std::endl; //-> { [Test, 1], [Test2, 2] }
 		```
+### print
+Found in `namespace beleg::helpers::print`
+* print
+	* Prints everything thats passed to it (Most basic print, saves you from writing std::cout and std::endl)
+	* While this is very basic it may be useful, I may add proper formatting support later.
+	* Example
+		```cpp
+		print(10, " is a number!");
+		```
 ### Note
 In all the examples only std::vector and std::map are used but the library is not limited to those.
 As long as the container has the functions `begin`, `end` as well as an `const_iterator` the extensions ***should*** mostly work, but some extensions like the slice function requires the container to have an `assign` function.
