@@ -110,7 +110,7 @@ namespace beleg
 				char* output = new char[size + 1];
 				snprintf(output, size + 1, str.c_str(), args...);
 				stream << output << std::endl;
-				delete output;
+				delete[] output;
 			}
 
 			template <typename ...T>
@@ -121,7 +121,7 @@ namespace beleg
 				char* output = new char[size + 1];
 				snprintf(output, size + 1, str.c_str(), args...);
 				rtn = output;
-				delete output;
+				delete[] output;
 				return rtn;
 			}
 			template <typename ...T>
@@ -133,7 +133,7 @@ namespace beleg
 				snprintf(output, size + 1, str.c_str(), args...);
 				rtn = output;
 				rtn += "\n";
-				delete output;
+				delete[] output;
 				return rtn;
 			}
 		}
