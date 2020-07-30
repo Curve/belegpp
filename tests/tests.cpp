@@ -164,7 +164,33 @@ int main()
 		assert(res.at(0) == "1");
 	}
 	{
-		print("belegpp - current time: ", time(0));
+		println("belegpp - current time: ", time(0));
+	}
+	{
+		printfln("[1] Test: %i", 10);
+	}
+	{
+		std::stringstream sstream;
+		printfln(sstream, "[2] Test: %i", 20);
+		assert(sstream.str() == "[2] Test: 20\n");
+	}
+	{
+		auto result = printfs("[4] Test: %i", 40);
+		assert(result == "[4] Test: 40");
+	}
+	{
+		auto result = printfsln("[5] Test: %i", 50);
+		assert(result == "[5] Test: 50\n");
+	}
+	{
+		std::vector<int> test = { 1,2,3 };
+		auto result = test | join();
+		assert(result == "123");
+	}
+	{
+		std::map<std::string, int> test = { {"one", 1},{"two", 2},{"three", 3} };
+		auto result = test | join("...");
+		assert(result == "[one,1]...[three,3]...[two,2]");
 	}
 
 	std::cout << "Tests finished!" << std::endl;

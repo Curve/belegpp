@@ -89,7 +89,52 @@ namespace beleg
 			void print(T... args)
 			{
 				((std::cout << args), ...);
+			}
+			template <typename ...T>
+			void println(T... args)
+			{
+				((std::cout << args), ...);
 				std::cout << std::endl;
+			}
+			
+			template <typename ...T>
+			void printfln(std::string str, T... args)
+			{
+				printf(str.c_str(), args...);
+				printf("\n");
+			}
+			template <typename S, typename ...T>
+			void printfln(S& stream, std::string str, T... args)
+			{
+				std::size_t size = snprintf(nullptr, 0, str.c_str(), args...);
+				char* output = new char[size + 1];
+				snprintf(output, size + 1, str.c_str(), args...);
+				stream << output << std::endl;
+				delete output;
+			}
+
+			template <typename ...T>
+			std::string printfs(std::string str, T... args)
+			{
+				std::string rtn;
+				std::size_t size = snprintf(nullptr, 0, str.c_str(), args...);
+				char* output = new char[size + 1];
+				snprintf(output, size + 1, str.c_str(), args...);
+				rtn = output;
+				delete output;
+				return rtn;
+			}
+			template <typename ...T>
+			std::string printfsln(std::string str, T... args)
+			{
+				std::string rtn;
+				std::size_t size = snprintf(nullptr, 0, str.c_str(), args...);
+				char* output = new char[size + 1];
+				snprintf(output, size + 1, str.c_str(), args...);
+				rtn = output;
+				rtn += "\n";
+				delete output;
+				return rtn;
 			}
 		}
 		namespace strings
@@ -491,6 +536,54 @@ namespace beleg
 				}
 				return stream;
 			}
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type>::value
+			>* = nullptr>
+				std::string join(T& what, std::string separator)
+			{
+				std::stringstream rtn;
+				for (auto it = what.begin(); it != what.end(); ++it)
+				{
+					if (std::distance(it, what.end()) == 1)
+					{
+						rtn << *it;
+					}
+					else
+					{
+						rtn << *it << separator;
+					}
+				}
+				return rtn.str();
+			}
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_map_like<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::string join(T& what, std::string separator)
+			{
+				std::stringstream rtn;
+				for (auto it = what.begin(); it != what.end(); ++it)
+				{
+					if (std::distance(it, what.end()) == 1)
+					{
+						rtn << "[" << it->first << "," << it->second << "]";
+					}
+					else
+					{
+						rtn << "[" << it->first << "," << it->second << "]" << separator;
+					}
+				}
+				return rtn.str();
+			}
 		}
 	}
 	namespace extensions
@@ -836,6 +929,32 @@ namespace beleg
 				std::ostream& operator<<(std::ostream& stream, const T& what)
 			{
 				return helpers::containers::mapLikeToStream(stream, what);
+			}
+
+			struct join { std::string separator; join(std::string separator = "") : separator(separator) {}; };
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type>::value
+			>* = nullptr>
+				std::string operator|(T& container, join what)
+			{
+				return helpers::containers::join(container, what.separator);
+			}
+			template<typename T, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
+				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
+				std::enable_if_t<
+				sfinae::has_const_iterator<T>::value &&
+				!sfinae::is_streamable<T>::value &&
+				sfinae::is_map_like<T>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::first_type>::value &&
+				sfinae::is_streamable<typename T::const_iterator::value_type::second_type>::value
+			>* = nullptr>
+				std::string operator|(T& container, join what)
+			{
+				return helpers::containers::join(container, what.separator);
 			}
 		}
 	}

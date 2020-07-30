@@ -31,10 +31,8 @@ If you're using [object_threadsafe](https://github.com/AlexeyAB/object_threadsaf
 ## Portability
 Tested and compiled with:
 -   Microsoft Visual Studio 2017
--   G++(GCC) 9.3.0 (*)
+-   G++(GCC) 9.3.0
 -   Clang(++) 10.0.0
-
-(*) not tested
 
 ## Exceptions
 This library doesn't throw exceptions, I may add support for that later but for now I don't see any use case for exceptions in this library.
@@ -292,15 +290,51 @@ Found in `namespace beleg::extensions::containers`
 		test2.insert({ "Test2", 2 }); 
 		std::cout << test2 << std::endl; //-> { [Test, 1], [Test2, 2] }
 		```
+* join
+	* Joins an array
+	* Takes separator as an optional argument
+	* Returns string
+	* Example
+		```cpp
+		std::vector<int> test = { 1,2,3 };
+		auto result = test | join(); //-> "123"
+		```
+	* Works with maps too!
+		* Example
+			```cpp
+			std::map<std::string, int> test = { {"one", 1},{"two", 2} };
+			auto resutl = test | join("..."); //-> "[one,1]...[two,2]"
+			```
 ### print
 Found in `namespace beleg::helpers::print`
-* print
+* println
 	* Prints everything thats passed to it (Most basic print, saves you from writing std::cout and std::endl)
 	* While this is very basic it may be useful, I may add proper formatting support later.
 	* Example
 		```cpp
-		print(10, " is a number!");
+		println(10, " is a number!");
 		```
+* print
+	* like println without newline
+* printfln
+	* Like printf
+	* Takes a steam as optional paramter
+	* Example
+		```cpp
+		printfln("%i", 10); //-> Will print 10
+		
+		std::stringstream someStream;
+		printfln(someStream, "%i", 10);
+		someStream.str() //-> "10\n"
+		```
+* printfs
+	* Like printf but the result is returned as a string
+	* Example
+		```cpp
+		std::string result = printfs("Test: %i", 1337); //-> "Test: 1337"
+		```
+* printfsln
+	* Like printfs but appends a new line
 ### Note
 In all the examples only std::vector and std::map are used but the library is not limited to those.
 As long as the container has the functions `begin`, `end` as well as an `const_iterator` the extensions ***should*** mostly work, but some extensions like the slice function requires the container to have an `assign` function.
