@@ -162,29 +162,29 @@ namespace beleg
 				{
 					return rightVal.getRaw();
 				}
-				template <typename ...T>
-				auto getValue(T&&... other)
+				template <typename ...O>
+				auto getValue(O&&... other)
 				{
-					std::tuple<T&...> tupled(other...);
+					std::tuple<O&...> tupled(other...);
 					return This()->getValueImpl(tupled);
 				}
-				template <typename ...T>
-				auto operator()(T&&... args)
+				template <typename ...O>
+				auto operator()(O&&... args)
 				{
 					return getValue(args...);
 				}
-				template <typename ...T>
+				template <typename ...O>
 				auto getLambda()
 				{
-					using rtnType = decltype(std::declval<Derived>().getValueImpl(std::declval<std::tuple<T&...>&>()));
-					std::function<rtnType(T... args)> func = [=](auto&&... items)
+					using rtnType = decltype(std::declval<Derived>().getValueImpl(std::declval<std::tuple<O&...>&>()));
+					std::function<rtnType(O... args)> func = [=](auto&&... items)
 					{
 						return this->getValue(items...);
 					};
 					return func;
 				}
-				template <typename ...T>
-				auto& getValueImplR(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto& getValueImplR(std::tuple<O&...>& other)
 				{
 					return This()->getValueImpl(other);
 				}
@@ -195,8 +195,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<EqualsFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) == this->rightVal.getValueImpl(other);
 				}
@@ -206,8 +206,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<NotEqualsFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) != this->rightVal.getValueImpl(other);
 				}
@@ -217,8 +217,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<AndFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) && this->rightVal.getValueImpl(other);
 				}
@@ -228,8 +228,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<OrFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) || this->rightVal.getValueImpl(other);
 				}
@@ -239,8 +239,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<LessFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) < this->rightVal.getValueImpl(other);
 				}
@@ -250,8 +250,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<LessEqualsFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) <= this->rightVal.getValueImpl(other);
 				}
@@ -261,8 +261,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<GreaterFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) > this->rightVal.getValueImpl(other);
 				}
@@ -272,8 +272,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<GreaterEqualsFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				bool getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				bool getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) >= this->rightVal.getValueImpl(other);
 				}
@@ -283,8 +283,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<AdditionFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return  this->leftVal.getValueImpl(other) + this->rightVal.getValueImpl(other);
 				}
@@ -294,8 +294,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<SubstractionFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) - this->rightVal.getValueImpl(other);
 				}
@@ -305,8 +305,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<MultiplicationFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) * this->rightVal.getValueImpl(other);
 				}
@@ -316,8 +316,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<DivideFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) / this->rightVal.getValueImpl(other);
 				}
@@ -327,8 +327,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<ModuloFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) % this->rightVal.getValueImpl(other);
 				}
@@ -338,8 +338,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<XorFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) ^ this->rightVal.getValueImpl(other);
 				}
@@ -350,8 +350,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<AssignFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImplR(other) = this->rightVal.getValueImpl(other);
 				}
@@ -361,8 +361,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<ShiftFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) << this->rightVal.getValueImpl(other);
 				}
@@ -372,8 +372,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<ShiftLeftFunctor<T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					return this->leftVal.getValueImpl(other) >> this->rightVal.getValueImpl(other);
 				}
@@ -384,8 +384,8 @@ namespace beleg
 			{
 			public:
 				using BaseFunctor<ChainFunctor <T, TR>, T, TR>::BaseFunctor;
-				template <typename ...T>
-				auto getValueImpl(std::tuple<T&...>& other)
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
 				{
 					this->leftVal.getValueImpl(other);
 					return this->rightVal.getValueImpl(other);
@@ -1187,7 +1187,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::map(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::map(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1225,7 +1225,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::filter(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::filter(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1243,7 +1243,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::forEach(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::forEach(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1273,7 +1273,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<W>::value)
 				{
-					return helpers::containers::findIf(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::findIf(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1291,7 +1291,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::removeIf(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::removeIf(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1343,7 +1343,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::sort(container, what.func.getLambda<typename T::const_iterator::value_type&, typename T::const_iterator::value_type&>());
+					return helpers::containers::sort(container, what.func.template getLambda<typename T::const_iterator::value_type&, typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1361,7 +1361,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::some(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::some(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -1379,7 +1379,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::every(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+					return helpers::containers::every(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
 				else
 				{

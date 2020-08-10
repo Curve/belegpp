@@ -452,7 +452,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::map(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::map(container, transfrm.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -482,7 +482,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::filter(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::filter(container, transfrm.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -499,7 +499,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::forEach(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::forEach(container, transfrm.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -527,7 +527,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<W>::value)
 				{
-					return helpers::containers::findIf(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::findIf(container, what.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -544,7 +544,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::removeIf(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::removeIf(container, what.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -592,7 +592,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::sort(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::sort(container, what.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -609,7 +609,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::some(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::some(container, what.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
@@ -626,7 +626,7 @@ namespace beleg
 			{
 				if constexpr (sfinae::is_custom<F>::value)
 				{
-					return helpers::containers::every(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+					return helpers::containers::every(container, what.func.template getLambda<typename T::obj_t::const_iterator::value_type&>());
 				}
 				else
 				{
