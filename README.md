@@ -151,6 +151,9 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<std::string> list = {"One", "Two"};
 		list | map([](auto& item) { return "Number " + item; }) //-> {"Number One", "Number Two"}
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		list | map("Number " + x) //-> {"Number One", "Number Two"}
 		```
 * mapTo
 	* Returns a copy
@@ -165,6 +168,9 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> list = {1, 2, 3, 4, 5, 6};
 		list | filter([](auto& item) { return item % 2 == 0; }) //-> {2, 4, 6}
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		list | filter((x % 2) == 0) //-> {2, 4, 6}
 		```
 * forEach
 	* Basically just std::for_each as an extension
@@ -192,6 +198,11 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> list = { 1, 2, 3 };
 		auto two = list | findIf([](auto& item) { return item == 2; });
+		/*
+		or:
+		auto x = QuickPlaceholder<0>{};
+		auto two = list | findIf(x == 2);
+		*/
 		if (two)
 		{
 			std::cout << **two << std::endl;
@@ -223,6 +234,9 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
 		list | removeIf([](auto& item) { return item % 2 == 0; });
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		list | removeIf((x % 2) == 0);
 		//-> List is now: { 1, 3, 5 }
 		```
 * removeAt
@@ -240,6 +254,10 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> test = { 1, 2, 3 };
 		auto sorted = test | sort([](auto& first, auto& second) { return first > second; });
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		auto x2 = QuickPlaceholder<1>{};
+		auto sorted = test | sort(x > x2);
 		//-> sorted { 3, 2, 1 };
 		```
 * some
@@ -247,12 +265,18 @@ Found in `namespace beleg::extensions::containers`
 		```cpp
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		test | some([](auto item) {return item % 2 == 0; }) //-> true
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		test | some((x % 2) == 0) //-> true
 		```
 * every
 	* Example
 		```cpp
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		test | every([](auto item) {return item % 2 == 0; }) //-> false
+		/*or*/
+		auto x = QuickPlaceholder<0>{};
+		test | every((x % 2) == 0) //-> false
 		```
 * slice
 	* Returns a copy
@@ -335,6 +359,46 @@ Found in `namespace beleg::helpers::print`
 		```
 * printfsln
 	* Like printfs but appends a new line
+## Beleg Lambdas
+Found in `namespace beleg::lambdas` 
+<b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported! 
+
+Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
+### QuickPlaceholder
+Is a placeholder for a function parameter.
+#### How to use
+```cpp
+auto x = QuickPlaceholder<0/*the index of the function parameter*/>{};
+
+// If we have a function like this:
+void test(int firstParam, std::string secondParam);
+// The placeholders would look like following =>
+auto firstParam = QuickPlaceholder<0>{};
+auto secondParam = QuickPlaceholder<1>{};
+```
+### Example
+```cpp
+auto x = QuickPlaceholder<0>{};
+auto testFunc = (x = 10);
+
+int testVal = 0;
+testFunc(testVal);
+//testVal is now 10
+
+int testVal2 = 0;
+auto isZeroFunc = (x == 0);
+bool isZero = isZeroFunc(testVal2); 
+//-> true
+
+std::string testStr("Some");
+auto multFunc = (x = (x + " Test"), x == "Some Test");
+bool isSomeTest = multFunc(testStr);
+//-> true
+//-> testStr is now "Some Test"
+```
+For more examples look at `tests.cpp`
+
+
 ### Note
 In all the examples only std::vector and std::map are used but the library is not limited to those.
 As long as the container has the functions `begin`, `end` as well as an `const_iterator` the extensions ***should*** mostly work, but some extensions like the slice function requires the container to have an `assign` function.

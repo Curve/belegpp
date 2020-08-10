@@ -450,7 +450,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, map<F> transfrm)
 			{
-				return helpers::containers::map(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::map(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::map(container, transfrm.func);
+				}
 			}
 
 			template <typename R, typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -473,7 +480,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, filter<F> transfrm)
 			{
-				return helpers::containers::filter(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::filter(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::filter(container, transfrm.func);
+				}
 			}
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -483,7 +497,14 @@ namespace beleg
 			>* = nullptr>
 				void operator|(T& container, forEach<F> transfrm)
 			{
-				return helpers::containers::forEach(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::forEach(container, transfrm.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::forEach(container, transfrm.func);
+				}
 			}
 
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -504,7 +525,14 @@ namespace beleg
 			>* = nullptr>
 				std::optional<typename T::obj_t::const_iterator> operator|(T& container, findIf<W> what)
 			{
-				return helpers::containers::findIf(container, what.func);
+				if constexpr (sfinae::is_custom<W>::value)
+				{
+					return helpers::containers::findIf(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::findIf(container, what.func);
+				}
 			}
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -514,7 +542,14 @@ namespace beleg
 			>* = nullptr>
 				T& operator|(T& container, removeIf<F> what)
 			{
-				return helpers::containers::removeIf(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::removeIf(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::removeIf(container, what.func);
+				}
 			}
 
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -555,7 +590,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, sort<F> what)
 			{
-				return helpers::containers::sort(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::sort(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::sort(container, what.func);
+				}
 			}
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -565,7 +607,14 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, some<F> what)
 			{
-				return helpers::containers::some(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::some(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::some(container, what.func);
+				}
 			}
 
 			template <typename T, typename F, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,
@@ -575,7 +624,14 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, every<F> what)
 			{
-				return helpers::containers::every(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::every(container, what.func.getLambda<typename T::obj_t::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::every(container, what.func);
+				}
 			}
 
 			template <typename T, typename = std::decay_t<decltype(*begin(std::declval<typename T::obj_t>()))>,

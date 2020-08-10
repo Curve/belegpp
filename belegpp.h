@@ -14,6 +14,20 @@ namespace beleg
 	namespace sfinae
 	{
 		template <typename T>
+		class is_custom {
+		private:
+			typedef char Yes;
+			typedef Yes No[2];
+
+			template<typename C> static auto Test(void*)
+				-> decltype(size_t{ C::isBelegType::value }, Yes{});
+
+			template<typename> static No& Test(...);
+
+		public:
+			static bool constexpr value = sizeof(Test<T>(0)) == sizeof(Yes);
+		};
+		template <typename T>
 		struct has_const_iterator
 		{
 		private:
@@ -44,7 +58,7 @@ namespace beleg
 		struct is_streamable :
 			is_streamable_impl::is_streamable<T> {
 		};
-		
+
 		template <typename T>
 		struct is_map_like
 		{
@@ -81,6 +95,440 @@ namespace beleg
 		constexpr Ref* operator->() const noexcept { return &ref; }
 
 	};
+	namespace lambdas
+	{
+		namespace internal
+		{
+			class Base
+			{
+			public:
+				using isBelegType = std::true_type;
+			};
+
+			template <typename T>
+			class ValueHolder : public Base
+			{
+				T value;
+			public:
+				ValueHolder() {}
+				ValueHolder(T other) : value(other) {};
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
+				{
+					if constexpr (sfinae::is_custom<decltype(value)>::value)
+					{
+						return value.getValueImpl(other);
+					}
+					else
+					{
+						return value;
+					}
+				}
+				template <typename ...O>
+				auto& getValueImplR(std::tuple<O&...>& other)
+				{
+					if constexpr (sfinae::is_custom<decltype(value)>::value)
+					{
+						return value.getValueImpl(other);
+					}
+					else
+					{
+						return value;
+					}
+				}
+				auto getRaw()
+				{
+					return value;
+				}
+			};
+
+			template <class Derived, typename TL, typename TR>
+			class BaseFunctor : public Base
+			{
+			protected:
+				ValueHolder<TL> leftVal;
+				ValueHolder<TR> rightVal;
+				Derived* This() { return static_cast<Derived*>(this); }
+			public:
+				using left = TL;
+				using right = TR;
+				explicit BaseFunctor() { }
+				explicit BaseFunctor(TL leftVal, TR rightVal) : leftVal(leftVal), rightVal(rightVal) { }
+				auto getLeftRaw()
+				{
+					return leftVal.getRaw();
+				}
+				auto getRightRaw()
+				{
+					return rightVal.getRaw();
+				}
+				template <typename ...T>
+				auto getValue(T&&... other)
+				{
+					std::tuple<T&...> tupled(other...);
+					return This()->getValueImpl(tupled);
+				}
+				template <typename ...T>
+				auto operator()(T&&... args)
+				{
+					return getValue(args...);
+				}
+				template <typename ...T>
+				auto getLambda()
+				{
+					using rtnType = decltype(std::declval<Derived>().getValueImpl(std::declval<std::tuple<T&...>&>()));
+					std::function<rtnType(T... args)> func = [=](auto&&... items)
+					{
+						return this->getValue(items...);
+					};
+					return func;
+				}
+				template <typename ...T>
+				auto& getValueImplR(std::tuple<T&...>& other)
+				{
+					return This()->getValueImpl(other);
+				}
+			};
+
+			template <typename T, typename TR>
+			class EqualsFunctor : public BaseFunctor<EqualsFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<EqualsFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) == this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class NotEqualsFunctor : public BaseFunctor<NotEqualsFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<NotEqualsFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) != this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class AndFunctor : public BaseFunctor<AndFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<AndFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) && this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class OrFunctor : public BaseFunctor<OrFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<OrFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) || this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class LessFunctor : public BaseFunctor<LessFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<LessFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) < this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class LessEqualsFunctor : public BaseFunctor<LessEqualsFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<LessEqualsFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) <= this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class GreaterFunctor : public BaseFunctor<GreaterFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<GreaterFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) > this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class GreaterEqualsFunctor : public BaseFunctor<GreaterEqualsFunctor<T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<GreaterEqualsFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				bool getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) >= this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class AdditionFunctor : public BaseFunctor<AdditionFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<AdditionFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return  this->leftVal.getValueImpl(other) + this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class SubstractionFunctor : public BaseFunctor<SubstractionFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<SubstractionFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) - this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class MultiplicationFunctor : public BaseFunctor<MultiplicationFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<MultiplicationFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) * this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class DivideFunctor : public BaseFunctor<DivideFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<DivideFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) / this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class ModuloFunctor : public BaseFunctor<ModuloFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<ModuloFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) % this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class XorFunctor : public BaseFunctor<XorFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<XorFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) ^ this->rightVal.getValueImpl(other);
+				}
+			};
+
+			template <typename T, typename TR>
+			class AssignFunctor : public BaseFunctor<AssignFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<AssignFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImplR(other) = this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class ShiftFunctor : public BaseFunctor<ShiftFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<ShiftFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) << this->rightVal.getValueImpl(other);
+				}
+			};
+			template <typename T, typename TR>
+			class ShiftLeftFunctor : public BaseFunctor<ShiftLeftFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<ShiftLeftFunctor<T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					return this->leftVal.getValueImpl(other) >> this->rightVal.getValueImpl(other);
+				}
+			};
+
+			template <typename T, typename TR>
+			class ChainFunctor : public BaseFunctor<ChainFunctor <T, TR>, T, TR>
+			{
+			public:
+				using BaseFunctor<ChainFunctor <T, TR>, T, TR>::BaseFunctor;
+				template <typename ...T>
+				auto getValueImpl(std::tuple<T&...>& other)
+				{
+					this->leftVal.getValueImpl(other);
+					return this->rightVal.getValueImpl(other);
+				}
+			};
+		}
+		template <std::uint16_t IDX>
+		class QuickPlaceholder : public internal::Base
+		{
+		public:
+			QuickPlaceholder()
+			{}
+			template <typename ...T>
+			auto& getValueImpl(std::tuple<T&...>& other)
+			{
+				auto& item = std::get<IDX>(other);
+				if constexpr (sfinae::is_custom<decltype(item)>::value)
+				{
+					return item.getValueImpl(other);
+				}
+				else
+				{
+					return item;
+				}
+			}
+			template <typename T>
+			auto operator=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, T>(*this, right);
+			}
+			template <typename T>
+			auto operator*=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, internal::MultiplicationFunctor<QuickPlaceholder, T>>(*this, internal::MultiplicationFunctor<QuickPlaceholder, T>(*this, right));
+			}
+			template <typename T>
+			auto operator/=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, internal::DivideFunctor<QuickPlaceholder, T>>(*this, internal::DivideFunctor<QuickPlaceholder, T>(*this, right));
+			}
+			template <typename T>
+			auto operator-=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, internal::SubstractionFunctor<QuickPlaceholder, T>>(*this, internal::SubstractionFunctor<QuickPlaceholder, T>(*this, right));
+			}
+			template <typename T>
+			auto operator+=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, internal::AdditionFunctor<QuickPlaceholder, T>>(*this, internal::AdditionFunctor<QuickPlaceholder, T>(*this, right));
+			}
+			template <typename T>
+			auto operator^=(T&& right)
+			{
+				return internal::AssignFunctor<QuickPlaceholder, internal::XorFunctor<QuickPlaceholder, T>>(*this, internal::XorFunctor<QuickPlaceholder, T>(*this, right));
+			}
+		};
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator==(Left left, Right right)
+		{
+			return internal::EqualsFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator!=(Left left, Right right)
+		{
+			return internal::NotEqualsFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator&&(Left left, Right right)
+		{
+			return internal::AndFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator||(Left left, Right right)
+		{
+			return internal::OrFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator<(Left left, Right right)
+		{
+			return internal::LessFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator<=(Left left, Right right)
+		{
+			return internal::LessEqualsFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator>(Left left, Right right)
+		{
+			return internal::GreaterFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator>=(Left left, Right right)
+		{
+			return internal::GreaterEqualsFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator,(Left left, Right right)
+		{
+			return internal::ChainFunctor<Left, Right>(left, right);
+		}
+
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator+(Left left, Right right)
+		{
+			return internal::AdditionFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator-(Left left, Right right)
+		{
+			return internal::SubstractionFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator*(Left left, Right right)
+		{
+			return internal::MultiplicationFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator/(Left left, Right right)
+		{
+			return internal::DivideFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator%(Left left, Right right)
+		{
+			return internal::ModuloFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator^(Left left, Right right)
+		{
+			return internal::XorFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator<<(Left left, Right right)
+		{
+			return internal::ShiftFunctor<Left, Right>(left, right);
+		}
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		auto operator>>(Left left, Right right)
+		{
+			return internal::ShiftLeftFunctor<Left, Right>(left, right);
+		}
+	}
 	namespace helpers
 	{
 		namespace print
@@ -96,7 +544,7 @@ namespace beleg
 				((std::cout << args), ...);
 				std::cout << std::endl;
 			}
-			
+
 			template <typename ...T>
 			void printfln(std::string str, T... args)
 			{
@@ -737,7 +1185,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, map<F> transfrm)
 			{
-				return helpers::containers::map(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::map(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::map(container, transfrm.func);
+				}
 			}
 
 			template <typename T, typename R> struct _mapTo { T func; _mapTo(T func) : func(func) {} };
@@ -768,7 +1223,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, filter<F> transfrm)
 			{
-				return helpers::containers::filter(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::filter(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::filter(container, transfrm.func);
+				}
 			}
 
 			template <typename T> struct forEach { T func; forEach(T func) : func(func) {} };
@@ -779,7 +1241,14 @@ namespace beleg
 			>* = nullptr>
 				void operator|(T& container, forEach<F> transfrm)
 			{
-				return helpers::containers::forEach(container, transfrm.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::forEach(container, transfrm.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::forEach(container, transfrm.func);
+				}
 			}
 
 			template <typename T> struct find { T what; find(T what) : what(what) {} };
@@ -794,7 +1263,7 @@ namespace beleg
 				return helpers::containers::find(container, what.what);
 			}
 
-			template <typename T> struct findIf { T func; findIf(T func) : func(func) {} };
+			template <typename T> struct findIf { T func; findIf(T func) : func(func) {}; };
 			template <typename T, typename W, typename = std::decay_t<decltype(*begin(std::declval<T>()))>,
 				typename = std::decay_t<decltype(*end(std::declval<T>()))>,
 				std::enable_if_t<
@@ -802,7 +1271,14 @@ namespace beleg
 			>* = nullptr>
 				std::optional<typename T::const_iterator> operator|(T& container, findIf<W> what)
 			{
-				return helpers::containers::findIf(container, what.func);
+				if constexpr (sfinae::is_custom<W>::value)
+				{
+					return helpers::containers::findIf(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::findIf(container, what.func);
+				}
 			}
 
 			template <typename T> struct removeIf { T func; removeIf(T func) : func(func) {} };
@@ -813,7 +1289,14 @@ namespace beleg
 			>* = nullptr>
 				T& operator|(T& container, removeIf<F> what)
 			{
-				return helpers::containers::removeIf(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::removeIf(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::removeIf(container, what.func);
+				}
 			}
 
 			struct reverse {};
@@ -858,7 +1341,14 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, sort<F> what)
 			{
-				return helpers::containers::sort(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::sort(container, what.func.getLambda<typename T::const_iterator::value_type&, typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::sort(container, what.func);
+				}
 			}
 
 			template <typename T> struct some { T func; some(T func) : func(func) {} };
@@ -869,7 +1359,14 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, some<F> what)
 			{
-				return helpers::containers::some(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::some(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::some(container, what.func);
+				}
 			}
 
 			template <typename T> struct every { T func; every(T func) : func(func) {} };
@@ -880,7 +1377,14 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, every<F> what)
 			{
-				return helpers::containers::every(container, what.func);
+				if constexpr (sfinae::is_custom<F>::value)
+				{
+					return helpers::containers::every(container, what.func.getLambda<typename T::const_iterator::value_type&>());
+				}
+				else
+				{
+					return helpers::containers::every(container, what.func);
+				}
 			}
 
 			struct slice { int start; int end; slice(int start, int end = 0) : start(start), end(end) {} };

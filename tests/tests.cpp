@@ -5,6 +5,7 @@
 #include <time.h>
 #include <map>
 
+using namespace beleg::lambdas;
 using namespace beleg::helpers::print;
 using namespace beleg::extensions::strings;
 using namespace beleg::extensions::containers;
@@ -79,15 +80,28 @@ int main()
 		std::vector<std::string> test = { "One", "Two" };
 		auto mapped = test | map([](auto& item) { return "Number " + item; });
 		assert(mapped.at(0) == "Number One");
+
+		auto x = QuickPlaceholder<0>{};
+		auto mapped2 = test | map("Number " + x);
+		assert(mapped2.at(0) == "Number One");
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
 		auto filtered = test | filter([](auto& item) { return item % 2 == 0; });
 		assert((filtered.at(1) == 4));
+
+		auto x = QuickPlaceholder<0>{};
+		auto filtered2 = test | filter((x % 2) == 0);
+		assert((filtered2.at(1) == 4));
 	}
 	{
 		std::vector<int> test = { 1 };
 		test | forEach([](auto& item) { assert(item == 1); });
+		
+		auto x = QuickPlaceholder<0>{};
+		test | forEach(x = 5);
+
+		assert(test.at(0) == 5);
 	}
 	{
 		std::vector<int> test = { 1,2,3 };
@@ -100,6 +114,11 @@ int main()
 		auto it = test | findIf([](auto& item) { return item % 2 == 0; });
 		assert(it);
 		assert(**it == 2);
+		
+		auto x = QuickPlaceholder<0>{};
+		auto it2 = test | findIf((x % 2) == 0);
+		assert(it2);
+		assert(**it2 == 2);
 	}
 	{
 		std::vector<int> test = { 1,2,3 };
@@ -115,6 +134,11 @@ int main()
 		std::vector<int> test = { 1,2,3,4 };
 		test | removeIf([](auto& item) { return item % 2 == 0; });
 		assert(test.at(1) == 3);
+		
+		std::vector<int> test2 = { 1,2,3,4 };
+		auto x = QuickPlaceholder<0>{};
+		test2 | removeIf((x % 2) == 0);
+		assert(test2.at(1) == 3);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3 };
@@ -125,14 +149,25 @@ int main()
 		std::vector<int> test = { 1, 2, 3 };
 		auto sorted = test | sort([](auto& first, auto& second) { return first > second; });
 		assert(sorted.at(0) == 3);
+
+		auto x = QuickPlaceholder<0>{};
+		auto x2 = QuickPlaceholder<1>{};
+		auto sorted2 = test | sort(x > x2);
+		assert(sorted2.at(0) == 3);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | some([](auto item) {return item % 2 == 0; })) == true);
+		
+		auto x = QuickPlaceholder<0>{};
+		assert((test | some((x % 2) == 0)) == true);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | every([](auto item) {return item % 2 == 0; })) == false);
+	
+		auto x = QuickPlaceholder<0>{};
+		assert((test | every((x % 2) == 0)) == false);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
