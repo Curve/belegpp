@@ -361,6 +361,7 @@ Found in `namespace beleg::helpers::print`
 	* Like printfs but appends a new line
 ## Beleg Lambdas
 Found in `namespace beleg::lambdas` 
+
 <b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported! 
 
 Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
