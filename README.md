@@ -1,3 +1,4 @@
+
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -360,11 +361,9 @@ Found in `namespace beleg::helpers::print`
 * printfsln
 	* Like printfs but appends a new line
 ## Beleg Lambdas
-Found in `namespace beleg::lambdas` 
-
+Found in `namespace beleg::lambdas`  
+Beleg lambdas provide a simple way to write primitive lambdas.  
 <b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported! 
-
-Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
 ### QuickPlaceholder
 Is a placeholder for a function parameter.
 #### How to use
