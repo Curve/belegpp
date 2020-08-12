@@ -1,4 +1,3 @@
-
 # Belegpp
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
@@ -153,8 +152,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<std::string> list = {"One", "Two"};
 		list | map([](auto& item) { return "Number " + item; }) //-> {"Number One", "Number Two"}
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		list | map("Number " + x) //-> {"Number One", "Number Two"}
+		list | map("Number " + _1) //-> {"Number One", "Number Two"}
 		```
 * mapTo
 	* Returns a copy
@@ -170,8 +168,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> list = {1, 2, 3, 4, 5, 6};
 		list | filter([](auto& item) { return item % 2 == 0; }) //-> {2, 4, 6}
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		list | filter((x % 2) == 0) //-> {2, 4, 6}
+		list | filter((_1 % 2) == 0) //-> {2, 4, 6}
 		```
 * forEach
 	* Basically just std::for_each as an extension
@@ -201,8 +198,7 @@ Found in `namespace beleg::extensions::containers`
 		auto two = list | findIf([](auto& item) { return item == 2; });
 		/*
 		or:
-		auto x = QuickPlaceholder<0>{};
-		auto two = list | findIf(x == 2);
+		auto two = list | findIf(_1 == 2);
 		*/
 		if (two)
 		{
@@ -236,8 +232,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> list = { 1, 2, 3, 4, 5, 6 };
 		list | removeIf([](auto& item) { return item % 2 == 0; });
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		list | removeIf((x % 2) == 0);
+		list | removeIf((_1 % 2) == 0);
 		//-> List is now: { 1, 3, 5 }
 		```
 * removeAt
@@ -256,9 +251,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> test = { 1, 2, 3 };
 		auto sorted = test | sort([](auto& first, auto& second) { return first > second; });
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		auto x2 = QuickPlaceholder<1>{};
-		auto sorted = test | sort(x > x2);
+		auto sorted = test | sort(_1 > _2);
 		//-> sorted { 3, 2, 1 };
 		```
 * some
@@ -267,8 +260,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		test | some([](auto item) {return item % 2 == 0; }) //-> true
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		test | some((x % 2) == 0) //-> true
+		test | some((_1 % 2) == 0) //-> true
 		```
 * every
 	* Example
@@ -276,8 +268,7 @@ Found in `namespace beleg::extensions::containers`
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		test | every([](auto item) {return item % 2 == 0; }) //-> false
 		/*or*/
-		auto x = QuickPlaceholder<0>{};
-		test | every((x % 2) == 0) //-> false
+		test | every((_1 % 2) == 0) //-> false
 		```
 * slice
 	* Returns a copy
@@ -361,11 +352,15 @@ Found in `namespace beleg::helpers::print`
 * printfsln
 	* Like printfs but appends a new line
 ## Beleg Lambdas
-Found in `namespace beleg::lambdas`  
-Beleg lambdas provide a simple way to write primitive lambdas.  
-<b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported! 
+Found in `namespace beleg::lambdas` 
+Predefined Placeholders found in `namespace beleg::lambdas::placeholders`  
+
+<b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported!  
+Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
+
 ### QuickPlaceholder
 Is a placeholder for a function parameter.
+<b>Note</b>: If you're not using QuickPlaceholders in any functions that have more than 10 Parameters you don't need to define them manually and you can ignore this part!
 #### How to use
 ```cpp
 auto x = QuickPlaceholder<0/*the index of the function parameter*/>{};
@@ -378,23 +373,31 @@ auto secondParam = QuickPlaceholder<1>{};
 ```
 ### Example
 ```cpp
-auto x = QuickPlaceholder<0>{};
-auto testFunc = (x = 10);
+auto testFunc = (_1 = 10);
 
 int testVal = 0;
 testFunc(testVal);
 //testVal is now 10
 
 int testVal2 = 0;
-auto isZeroFunc = (x == 0);
+auto isZeroFunc = (_1 == 0);
 bool isZero = isZeroFunc(testVal2); 
 //-> true
 
 std::string testStr("Some");
-auto multFunc = (x = (x + " Test"), x == "Some Test");
+auto multFunc = (_1 = (_1 + " Test"), _1 == "Some Test");
 bool isSomeTest = multFunc(testStr);
 //-> true
 //-> testStr is now "Some Test"
+
+//Conditions
+auto ifFunctor = _if(_1 == 5, _1 = 10, {});
+auto val = 5;
+ifFunctor.getValue(val);
+//-> val = 10
+
+auto isZero = _if(_1 == 0, true, false);
+isZero(0); //-> true
 ```
 For more examples look at `tests.cpp`
 

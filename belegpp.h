@@ -190,6 +190,28 @@ namespace beleg
 				}
 			};
 
+			template <typename C, typename T>
+			class IfFunctor : public BaseFunctor<IfFunctor<C, T>, T, T>
+			{
+			protected:
+				ValueHolder<C> condition;
+			public:
+				IfFunctor(C condition, T leftVal, T rightVal) : condition(condition), BaseFunctor<IfFunctor<C, T>, T, T>(leftVal, rightVal) { }
+
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
+					-> decltype(std::declval<T>().getValueImpl(std::declval<std::tuple<O&...>&>()))
+				{
+					if (this->condition.getValueImpl(other))
+					{
+						return this->leftVal.getValueImpl(other);
+					}
+					else
+					{
+						return this->rightVal.getValueImpl(other);
+					}
+				}
+			};
 			template <typename T, typename TR>
 			class EqualsFunctor : public BaseFunctor<EqualsFunctor<T, TR>, T, TR>
 			{
@@ -392,6 +414,7 @@ namespace beleg
 				}
 			};
 		}
+
 		template <std::uint16_t IDX>
 		class QuickPlaceholder : public internal::Base
 		{
@@ -527,6 +550,25 @@ namespace beleg
 		auto operator>>(Left left, Right right)
 		{
 			return internal::ShiftLeftFunctor<Left, Right>(left, right);
+		}
+
+		template <typename C, typename T>
+		auto _if(C condition, T _true, T _false)
+		{
+			return internal::IfFunctor<C, T>(condition, _true, _false);
+		}
+
+		namespace placeholders
+		{
+			inline QuickPlaceholder<0> _1;
+			inline QuickPlaceholder<1> _2;
+			inline QuickPlaceholder<2> _3;
+			inline QuickPlaceholder<3> _4;
+			inline QuickPlaceholder<4> _5;
+			inline QuickPlaceholder<5> _6;
+			inline QuickPlaceholder<6> _7;
+			inline QuickPlaceholder<7> _8;
+			inline QuickPlaceholder<8> _9;
 		}
 	}
 	namespace helpers

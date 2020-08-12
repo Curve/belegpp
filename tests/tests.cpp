@@ -8,6 +8,7 @@
 using namespace beleg::lambdas;
 using namespace beleg::helpers::print;
 using namespace beleg::extensions::strings;
+using namespace beleg::lambdas::placeholders;
 using namespace beleg::extensions::containers;
 
 int main()
@@ -81,8 +82,7 @@ int main()
 		auto mapped = test | map([](auto& item) { return "Number " + item; });
 		assert(mapped.at(0) == "Number One");
 
-		auto x = QuickPlaceholder<0>{};
-		auto mapped2 = test | map("Number " + x);
+		auto mapped2 = test | map("Number " + _1);
 		assert(mapped2.at(0) == "Number One");
 	}
 	{
@@ -90,17 +90,14 @@ int main()
 		auto filtered = test | filter([](auto& item) { return item % 2 == 0; });
 		assert((filtered.at(1) == 4));
 
-		auto x = QuickPlaceholder<0>{};
-		auto filtered2 = test | filter((x % 2) == 0);
+		auto filtered2 = test | filter((_1 % 2) == 0);
 		assert((filtered2.at(1) == 4));
 	}
 	{
 		std::vector<int> test = { 1 };
 		test | forEach([](auto& item) { assert(item == 1); });
 		
-		auto x = QuickPlaceholder<0>{};
-		test | forEach(x = 5);
-
+		test | forEach(_1 = 5);
 		assert(test.at(0) == 5);
 	}
 	{
@@ -115,8 +112,7 @@ int main()
 		assert(it);
 		assert(**it == 2);
 		
-		auto x = QuickPlaceholder<0>{};
-		auto it2 = test | findIf((x % 2) == 0);
+		auto it2 = test | findIf((_1 % 2) == 0);
 		assert(it2);
 		assert(**it2 == 2);
 	}
@@ -136,8 +132,7 @@ int main()
 		assert(test.at(1) == 3);
 		
 		std::vector<int> test2 = { 1,2,3,4 };
-		auto x = QuickPlaceholder<0>{};
-		test2 | removeIf((x % 2) == 0);
+		test2 | removeIf((_1 % 2) == 0);
 		assert(test2.at(1) == 3);
 	}
 	{
@@ -150,24 +145,20 @@ int main()
 		auto sorted = test | sort([](auto& first, auto& second) { return first > second; });
 		assert(sorted.at(0) == 3);
 
-		auto x = QuickPlaceholder<0>{};
-		auto x2 = QuickPlaceholder<1>{};
-		auto sorted2 = test | sort(x > x2);
+		auto sorted2 = test | sort(_1 > _2);
 		assert(sorted2.at(0) == 3);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | some([](auto item) {return item % 2 == 0; })) == true);
 		
-		auto x = QuickPlaceholder<0>{};
-		assert((test | some((x % 2) == 0)) == true);
+		assert((test | some((_1 % 2) == 0)) == true);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | every([](auto item) {return item % 2 == 0; })) == false);
 	
-		auto x = QuickPlaceholder<0>{};
-		assert((test | every((x % 2) == 0)) == false);
+		assert((test | every((_1 % 2) == 0)) == false);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5, 6 };
@@ -226,6 +217,13 @@ int main()
 		std::map<std::string, int> test = { {"one", 1},{"two", 2},{"three", 3} };
 		auto result = test | join("...");
 		assert(result == "[one,1]...[three,3]...[two,2]");
+	}
+	{
+		auto ifFunctor = _if(_1 == 5, _1 = 10, {});
+
+		auto val = 5;
+		ifFunctor.getValue(val);
+		assert(val == 10);
 	}
 
 	std::cout << "Tests finished!" << std::endl;
