@@ -247,10 +247,6 @@ int main()
 		test = "abc";
 		auto memberFunc2 = _call(&std::string::substr, _1, 0, 2);
 		assert(memberFunc2(test) == "ab");
-
-		auto assign = _call(&std::string::operator=<std::string>, _1, "New Value");
-		assign(test);
-		assert(test == "New Value");
 	}
 	{
 		auto testFunc = [](int item)
