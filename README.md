@@ -359,7 +359,7 @@ Predefined Placeholders found in `namespace beleg::lambdas::placeholders`
 Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
 
 ### QuickPlaceholder
-Is a placeholder for a function parameter.
+Is a placeholder for a function parameter.  
 <b>Note</b>: If you're not using QuickPlaceholders in any functions that have more than 10 Parameters you don't need to define them manually and you can ignore this part!
 #### How to use
 ```cpp
