@@ -414,7 +414,7 @@ auto result = callSomeFunc(10); //-> 15
 auto callSomeFuncWithKnownArg = _call(someFunction, 5);
 auto result = callSomeFuncWithKnownArg(); //-> 10
 
-//Okay so we can also do more complex stuff, for call a function with the return value of another:
+//Okay so we can also do more complex stuff, for example call a function with the return value of another:
 auto someTestFunc = []()
 {
 	return 10;
