@@ -110,12 +110,13 @@ namespace beleg
 			{
 				T value;
 			public:
+				using type = T;
 				ValueHolder() {}
 				ValueHolder(T other) : value(other) {};
 				template <typename ...O>
 				auto getValueImpl(std::tuple<O&...>& other)
 				{
-					if constexpr (sfinae::is_custom<decltype(value)>::value)
+					if constexpr (sfinae::is_custom<std::remove_reference_t<decltype(value)>>::value)
 					{
 						return value.getValueImpl(other);
 					}
@@ -127,7 +128,7 @@ namespace beleg
 				template <typename ...O>
 				auto& getValueImplR(std::tuple<O&...>& other)
 				{
-					if constexpr (sfinae::is_custom<decltype(value)>::value)
+					if constexpr (sfinae::is_custom<std::remove_reference_t<decltype(value)>>::value)
 					{
 						return value.getValueImpl(other);
 					}
@@ -413,6 +414,97 @@ namespace beleg
 					return this->rightVal.getValueImpl(other);
 				}
 			};
+			template <typename F, typename ...C>
+			class CallFunctor : public BaseFunctor<CallFunctor<F, C...>, int, int>
+			{
+				F func;
+				std::tuple<ValueHolder<C>...> params;
+			public:
+				CallFunctor(F func, ValueHolder<C>... args) : func(func), params(args...) {}
+
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
+				{
+					using rtn = decltype(std::declval<F>()(std::declval<ValueHolder<C>>().getValueImpl(other)...));
+
+					if constexpr (std::is_same<std::remove_reference_t<rtn>, void>::value)
+					{
+						auto convertFunc = [&](auto&... item)
+						{
+							func(item.getValueImpl(other)...);
+						};
+						std::apply(convertFunc, params);
+					}
+					else
+					{
+						rtn result;
+
+						auto convertFunc = [&](auto&... item)
+						{
+							result = func(item.getValueImpl(other)...);
+						};
+						std::apply(convertFunc, params);
+
+						return result;
+					}
+				}
+			};
+			template <typename T, typename R, typename Class, typename ...C>
+			class MemberCallFunctor : public BaseFunctor<MemberCallFunctor<T, R, Class, C...>, int, int>
+			{
+				R Class::*func;
+				ValueHolder<T> instance;
+				std::tuple<ValueHolder<C>...> params;
+			public:
+				MemberCallFunctor(R Class::*func, T instance, ValueHolder<C>... args) : func(func), instance(instance), params(args...) { }
+
+				template <typename ...O>
+				auto getValueImpl(std::tuple<O&...>& other)
+				{
+					using rtn = std::remove_reference_t<decltype((std::declval<Class>().*func)(std::declval<ValueHolder<C>>().getValueImpl(other)...))>;
+
+					if constexpr (std::is_same<rtn, void>::value)
+					{
+						auto convertFunc = [&, this](auto&... p)
+						{
+							auto convertFuncImpl = [&](auto& clazz, auto&... items)
+							{
+								(clazz.getValueImplR(other).*func)(items.getValueImpl(other)...);
+							};
+
+							convertFuncImpl(this->instance, p...);
+						};
+						std::apply(convertFunc, params);
+					}
+					else
+					{
+						rtn result;
+						auto convertFunc = [&, this](auto&... p)
+						{
+							auto convertFuncImpl = [&](auto& clazz, auto&... items)
+							{
+								result = (clazz.getValueImplR(other).*func)(items.getValueImpl(other)...);
+							};
+
+							convertFuncImpl(this->instance, p...);
+						};
+						std::apply(convertFunc, params);
+						return result;
+					}
+				}
+			};
+		}
+
+		//TODO: Move this
+		template <typename F, typename ...T>
+		auto _call(F func, T... args)
+		{
+			return internal::CallFunctor<F, T...>(func, args...);
+		}
+		template <typename I, typename R, typename Class, typename ...T>
+		auto _call(R Class::*func, I&& instance, T... args)
+		{
+			return internal::MemberCallFunctor<I, R, Class, T...>(func, instance, args...);
 		}
 
 		template <std::uint16_t IDX>
@@ -425,7 +517,7 @@ namespace beleg
 			auto& getValueImpl(std::tuple<T&...>& other)
 			{
 				auto& item = std::get<IDX>(other);
-				if constexpr (sfinae::is_custom<decltype(item)>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<decltype(item)>>::value)
 				{
 					return item.getValueImpl(other);
 				}
@@ -465,88 +557,88 @@ namespace beleg
 				return internal::AssignFunctor<QuickPlaceholder, internal::XorFunctor<QuickPlaceholder, T>>(*this, internal::XorFunctor<QuickPlaceholder, T>(*this, right));
 			}
 		};
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator==(Left left, Right right)
 		{
 			return internal::EqualsFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator!=(Left left, Right right)
 		{
 			return internal::NotEqualsFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator&&(Left left, Right right)
 		{
 			return internal::AndFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator||(Left left, Right right)
 		{
 			return internal::OrFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator<(Left left, Right right)
 		{
 			return internal::LessFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator<=(Left left, Right right)
 		{
 			return internal::LessEqualsFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator>(Left left, Right right)
 		{
 			return internal::GreaterFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator>=(Left left, Right right)
 		{
 			return internal::GreaterEqualsFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator,(Left left, Right right)
 		{
 			return internal::ChainFunctor<Left, Right>(left, right);
 		}
 
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator+(Left left, Right right)
 		{
 			return internal::AdditionFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator-(Left left, Right right)
 		{
 			return internal::SubstractionFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator*(Left left, Right right)
 		{
 			return internal::MultiplicationFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator/(Left left, Right right)
 		{
 			return internal::DivideFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator%(Left left, Right right)
 		{
 			return internal::ModuloFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator^(Left left, Right right)
 		{
 			return internal::XorFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator<<(Left left, Right right)
 		{
 			return internal::ShiftFunctor<Left, Right>(left, right);
 		}
-		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<Left>::value || sfinae::is_custom<Right>::value)>* = nullptr>
+		template <typename Left, typename Right, std::enable_if_t<(sfinae::is_custom<std::remove_reference_t<Left>>::value || sfinae::is_custom<std::remove_reference_t<Right>>::value)>* = nullptr>
 		auto operator>>(Left left, Right right)
 		{
 			return internal::ShiftLeftFunctor<Left, Right>(left, right);
@@ -1227,7 +1319,7 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, map<F> transfrm)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::map(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1265,7 +1357,7 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, filter<F> transfrm)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::filter(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1283,7 +1375,7 @@ namespace beleg
 			>* = nullptr>
 				void operator|(T& container, forEach<F> transfrm)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::forEach(container, transfrm.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1313,7 +1405,7 @@ namespace beleg
 			>* = nullptr>
 				std::optional<typename T::const_iterator> operator|(T& container, findIf<W> what)
 			{
-				if constexpr (sfinae::is_custom<W>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<W>>::value)
 				{
 					return helpers::containers::findIf(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1331,7 +1423,7 @@ namespace beleg
 			>* = nullptr>
 				T& operator|(T& container, removeIf<F> what)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::removeIf(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1383,7 +1475,7 @@ namespace beleg
 			>* = nullptr>
 				T operator|(T& container, sort<F> what)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::sort(container, what.func.template getLambda<typename T::const_iterator::value_type&, typename T::const_iterator::value_type&>());
 				}
@@ -1401,7 +1493,7 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, some<F> what)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::some(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}
@@ -1419,7 +1511,7 @@ namespace beleg
 			>* = nullptr>
 				bool operator|(T& container, every<F> what)
 			{
-				if constexpr (sfinae::is_custom<F>::value)
+				if constexpr (sfinae::is_custom<std::remove_reference_t<F>>::value)
 				{
 					return helpers::containers::every(container, what.func.template getLambda<typename T::const_iterator::value_type&>());
 				}

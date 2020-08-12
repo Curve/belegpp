@@ -355,7 +355,7 @@ Found in `namespace beleg::helpers::print`
 Found in `namespace beleg::lambdas` 
 Predefined Placeholders found in `namespace beleg::lambdas::placeholders`  
 
-<b><i>Note:</b></i> Function calls aswell as some other "complex" stuff is not supported!  
+<b><i>Note:</b></i> "Complex" stuff might not be supported!  
 Beleg lambdas provide a simple way to write lambdas to handle less complex stuff.
 
 ### QuickPlaceholder
@@ -398,6 +398,35 @@ ifFunctor.getValue(val);
 
 auto isZero = _if(_1 == 0, true, false);
 isZero(0); //-> true
+
+//Function Calls
+auto clearString = _call(&std::string::clear, _1);
+std::string toClear("Test");
+clearString(toClear); //-> toClear = ""
+
+auto someFunction = [](int test)
+{
+	return test + 5;
+};
+auto callSomeFunc = _call(someFunction, _1);
+auto result = callSomeFunc(10); //-> 15
+
+auto callSomeFuncWithKnownArg = _call(someFunction, 5);
+auto result = callSomeFuncWithKnownArg(); //-> 10
+
+//Okay so we can also do more complex stuff, for call a function with the return value of another:
+auto someTestFunc = []()
+{
+	return 10;
+};
+auto increase = [](auto item)
+{
+	return item + 10;
+};
+
+auto addThem = _call(increase, _call(someTestFunc));
+auto result = addThem(); //-> 20, although this works you might aswell just use a normal lambda at this point. Except if you're pre c++11, eventhough this library will not compile pre c++17 you might be able to port the lambda part to versions prior to c++11
+
 ```
 For more examples look at `tests.cpp`
 

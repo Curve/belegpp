@@ -96,7 +96,7 @@ int main()
 	{
 		std::vector<int> test = { 1 };
 		test | forEach([](auto& item) { assert(item == 1); });
-		
+
 		test | forEach(_1 = 5);
 		assert(test.at(0) == 5);
 	}
@@ -111,7 +111,7 @@ int main()
 		auto it = test | findIf([](auto& item) { return item % 2 == 0; });
 		assert(it);
 		assert(**it == 2);
-		
+
 		auto it2 = test | findIf((_1 % 2) == 0);
 		assert(it2);
 		assert(**it2 == 2);
@@ -130,7 +130,7 @@ int main()
 		std::vector<int> test = { 1,2,3,4 };
 		test | removeIf([](auto& item) { return item % 2 == 0; });
 		assert(test.at(1) == 3);
-		
+
 		std::vector<int> test2 = { 1,2,3,4 };
 		test2 | removeIf((_1 % 2) == 0);
 		assert(test2.at(1) == 3);
@@ -151,13 +151,13 @@ int main()
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | some([](auto item) {return item % 2 == 0; })) == true);
-		
+
 		assert((test | some((_1 % 2) == 0)) == true);
 	}
 	{
 		std::vector<int> test = { 1, 2, 3, 4, 5 };
 		assert((test | every([](auto item) {return item % 2 == 0; })) == false);
-	
+
 		assert((test | every((_1 % 2) == 0)) == false);
 	}
 	{
@@ -224,6 +224,50 @@ int main()
 		auto val = 5;
 		ifFunctor.getValue(val);
 		assert(val == 10);
+	}
+	{
+		auto someTestFunc = []()
+		{
+			return 10;
+		};
+		auto increase = [](auto item)
+		{
+			return item + 10;
+		};
+
+		auto addThem = _call(increase, _call(someTestFunc));
+		assert(addThem() == 20);
+	}
+	{
+		std::string test("Test");
+		auto memberFunc = _call(&std::string::clear, _1);
+		memberFunc(test);
+		assert(test.empty());
+
+		test = "abc";
+		auto memberFunc2 = _call(&std::string::substr, _1, 0, 2);
+		assert(memberFunc2(test) == "ab");
+
+		auto assign = _call(&std::string::operator=<std::string>, _1, "New Value");
+		assign(test);
+		assert(test == "New Value");
+	}
+	{
+		auto testFunc = [](int item)
+		{
+			return item + 5;
+		};
+
+		auto funcCall = _call(testFunc, _1);
+		assert(funcCall(10) == 15);
+
+		auto funcCall2 = _call(testFunc, 5);
+		assert(funcCall2() == 10);
+	}
+	{
+		std::string test("Test");
+		auto memberFunc = (_call(&std::string::clear, _1), _1 == "");
+		assert(memberFunc(test));
 	}
 
 	std::cout << "Tests finished!" << std::endl;
