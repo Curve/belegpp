@@ -400,7 +400,7 @@ auto isZero = _if(_1 == 0, true, false);
 isZero(0); //-> true
 
 //Function Calls
-auto clearString = _call(&std::string::clear, _1);
+auto clearString = _call(&std::string::clear, _1); // This is a call to a member function, the second argument passed to the _call function has to be an instance of the object.
 std::string toClear("Test");
 clearString(toClear); //-> toClear = ""
 
