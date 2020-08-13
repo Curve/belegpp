@@ -14,27 +14,25 @@ namespace beleg
 	namespace sfinae
 	{
 		template <typename T>
-		class is_custom {
-		private:
-			typedef char Yes;
-			typedef Yes No[2];
+		struct is_custom
+		{
+			static std::uint8_t test(...);
 
-			template<typename C> static auto Test(void*)
-				-> decltype(size_t{ C::isBelegType::value }, Yes{});
-
-			template<typename> static No& Test(...);
-
+			template <class C>
+			static auto test(C*) -> decltype(std::declval<typename C::isBelegType*>() == nullptr, std::uint16_t{});
 		public:
-			static bool constexpr value = sizeof(Test<T>(0)) == sizeof(Yes);
+			static const bool value = sizeof(test((T*)0)) == sizeof(std::uint16_t);
 		};
+
 		template <typename T>
 		struct has_const_iterator
 		{
-		private:
-			template <typename C> static std::true_type & test(typename C::const_iterator*);
-			template <typename C> static std::false_type & test(...);
+			static std::uint8_t test(...);
+
+			template <class C>
+			static auto test(C*) -> decltype(std::declval<typename C::const_iterator*>() == nullptr, std::uint16_t{});
 		public:
-			static const bool value = sizeof(test<T>(nullptr)) == sizeof(std::true_type);
+			static const bool value = sizeof(test((T*)0)) == sizeof(std::uint16_t);
 		};
 
 		namespace is_streamable_impl {
@@ -44,7 +42,7 @@ namespace beleg
 
 			std::uint8_t operator<<(std::ostream const&, any_t const&);
 
-			std::uint16_t& test(std::ostream&);
+			std::uint16_t test(std::ostream&);
 			std::uint8_t test(std::uint8_t);
 
 			template<typename T>
@@ -62,22 +60,24 @@ namespace beleg
 		template <typename T>
 		struct is_map_like
 		{
-		private:
-			template <typename C> static std::true_type & test(typename C::const_iterator::value_type::second_type*);
-			template <typename C> static std::false_type & test(...);
+			template <class C>
+			static std::uint8_t test(...);
+			template <class C>
+			static std::uint16_t test(typename C::const_iterator::value_type::second_type*);
 		public:
-			static const bool value = sizeof(test<T>(nullptr)) == sizeof(std::true_type);
+			static const bool value = sizeof(test<T>(nullptr)) == sizeof(std::uint16_t);
 		};
 
-		template<typename T, typename D, typename = void>
-		struct is_equality_comparable : std::false_type { };
-		template<typename T, typename D>
-		struct is_equality_comparable<T, D,
-			typename std::enable_if<
-			true,
-			decltype(std::declval<T&>() == std::declval<D&>(), (void)0)
-			>::type
-		> : std::true_type {};
+		template <typename T, typename O>
+		struct is_equality_comparable
+		{
+			static std::uint8_t test(...);
+
+			template <class C, class D>
+			static auto test(C*, D*) -> decltype(std::declval<C&>() == std::declval<D&>(), std::uint16_t{});
+		public:
+			static const bool value = sizeof(test((T*)0, (O*)0)) == sizeof(std::uint16_t);
+		};
 	}
 	template <typename Ref>
 	struct lor {
