@@ -81,7 +81,6 @@ namespace beleg
 	}
 	template <typename Ref>
 	struct lor {
-
 		Ref &&ref;
 
 		template <typename Arg>
@@ -93,7 +92,6 @@ namespace beleg
 		constexpr operator Ref && () const && noexcept { return std::move(ref); }
 		constexpr Ref& operator*() const noexcept { return ref; }
 		constexpr Ref* operator->() const noexcept { return &ref; }
-
 	};
 	namespace lambdas
 	{
