@@ -2,6 +2,7 @@
 
 [![Last Commit](https://img.shields.io/github/last-commit/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/commits)
 [![License](https://img.shields.io/github/license/Git-Curve/belegpp?style=for-the-badge)](https://github.com/Git-Curve/belegpp/blob/master/LICENSE)
+[![CodeFactor](https://www.codefactor.io/repository/github/belegpp/belegpp/badge/master?style=for-the-badge)](https://www.codefactor.io/repository/github/belegpp/belegpp/overview/master)
 
 ## What is this?
 Belegpp is a header only c++17 library that aims to simplify working with stl containers (and strings).
