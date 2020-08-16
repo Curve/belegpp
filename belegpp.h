@@ -997,7 +997,7 @@ namespace beleg
 				bool some(T& container, std::function<bool(typename T::const_iterator::value_type& first)> func)
 			{
 				bool some = false;
-				std::all_of(container.begin(), container.end(), [&](auto& item)
+				[[maybe_unused]] auto discarded = std::all_of(container.begin(), container.end(), [&](auto& item)
 				{
 					if (func(item))
 					{
